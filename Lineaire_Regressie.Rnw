@@ -86,11 +86,58 @@ JT.theme <- theme(panel.border = element_rect(fill = NA, colour = "gray10"),
 
 \chapter{Lineaire Regressie}
 
+\section{Inleiding}
+
+We nemen aan dat een responsvariabele $y$ be\"invloed wordt door $n$ onafhankelijke variabelen $x_{i}; i=1 \ldots n$. Maar er zijn ook $k$ onbekende en/of oncontroleerbare storende variabelen $z_{j}; j=1 \ldots k$. We kunnen dit schrijven als:
+
+\begin{equation}
+y=f(x_{1}, x_{2}, \ldots x_{n}; z_{1}, z_{2} \ldots z_{k})
+\end{equation}
+
+Het gevolg hiervan is dat bij herhaalde experimenten met eenzelfde instelling van de onafhankelijke variabelen $x_{i}$, we andere waarden voor de responsvariabele $y$ zullen krijgen. Figuur~\ref{fig:intro} geeft de situatie waarbij we maar \'e\'en onafhankelijke variabele $x$ hebben die op de waarden 1, 2, 3, 4 en 5 wordt ingesteld bij 10 herhalingsmetingen.
+<<label=intro,fig=TRUE,include=FALSE, echo=FALSE>>=
+N <- 10
+b0 <- -0.1
+b1 <- 0.7
+sigma_U <- 0.5
+set.seed(2018)
+geg <- data.frame(expnr = rep((1:10), each=5), x = rep(seq(1,5),N))
+geg$y <- b0 + b1*geg$x + rnorm(50, 0, sigma_U)
+ggplot(data=geg) +
+  geom_point(aes(x = x, y = y, color=expnr)) +
+  xlim(0, 6) +
+  ylim(0, 6) +
+  labs(title = "Startgegevens", 
+       subtitle = "10 herhalingsexperimenten",
+       x = "onafhankelijke variabele x", 
+       y = "waarneming van responsvariabele y") +
+  JT.theme
+@
+
+\begin{marginfigure}[-6cm]
+\includegraphics[width=1\textwidth]{LinReg-intro}
+\caption{ }
+\label{fig:intro}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{marginfigure}
+
+De responsvariabele $y$ is omwille van de storende factoren $z_{j}$ een \emph{kansvariabele} $Y$. We nemen aan dat de gemiddelde waarde van $Y$ beschreven wordt door een functie van de onafhankelijke variabelen $x_{i}$. Dat is een soort Platonisch ideaal dat echter voor ons verborgen is: wij zien enkel de schimmige waarnemingen die verstoord worden door de storende factoren. De verstoring vormt het arbitraire element en is dus het kansgedeelte dat we $U$ noemen en waarvan we aannemen\sidenote{Veronderstelling 1: E(U)=0} dat de gemiddelde waarde $E(U)=0$.
+\begin{equation}
+  \begin{split}  
+  Y=E(Y|x_{1}, x_{2}, \ldots x_{n}) + U&=f(x_{1}, x_{2}, \ldots x_{n}) + U \\
+  E(Y|x_{1}, x_{2}, \ldots x_{n})&=f(x_{1}, x_{2}, \ldots x_{n})  + 0
+  \end{split}
+\end{equation}
+
 \section{Enkelvoudige lineair regressie}
 
+\newthought{Bij een enkelvoudige regressie} is er slechts \'e\'en onafhankelijke variabele x.
+
+\newthought{Het (eenmalige) experiment} geeft volgende resultaten (Figuur~\ref{fig:geg}):
 \subsection{Data}
 <<label=geg,fig=TRUE,include=FALSE, echo=FALSE>>=
 geg <- data.frame(x = seq(1,5), y = c(1, 1, 2, 2, 4))
+n <- nrow(geg)
 ggplot(data=geg) +
   geom_point(aes(x = x, y = y)) +
   xlim(0, 6) +
@@ -99,36 +146,178 @@ ggplot(data=geg) +
   JT.theme
 @
 
-\begin{marginfigure}[7cm]
+\begin{marginfigure}[3cm]
 \includegraphics[width=1\textwidth]{LinReg-geg}
 \caption{ }
 \label{fig:geg}
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
-\newthought{De steekproef} geeft volgende resultaten (Figuur~\ref{fig:geg}):
-
 <<>>=
 geg
 @
 
-Dit zijn de waarden voor deze steekproef. Wanneer we het experiment herhalen, met dezelfde instellingen van de onafhankelijke variabele $x$, dan krijgen we wellicht toch andere waarden voor de responsvariabele $y$. De reden is dat $y$ niet alleen door $x$ wordt be\"invloed, maar ook door, onbekende en oncontroleerbare, stoorfactoren $z_{i}, i=1...n$. 
+We veronderstellen\sidenote{Veronderstelling 2: de vorm van de functie f(x) is $E(Y)=\beta_{0} + \beta_{1}x$} dat de achterliggende Platonische waarheid bestaat uit een lineair verband tussen $E(Y)$ end de onafhankelijke variabele $x$:
 \begin{equation}
-y=f(x; z_{1}, z_{2} \ldots z_{n})
+E(Y)=\beta_{0} + \beta_{1}x
 \end{equation}
 
-We veronderstellen dat er een Platonische waarheid bestaat die de responsvariabele $y$ verbindt met de onafhankelijke variabele $x$, en dat dit verband lineair is in $x$:
+De waarneming $Y$ bij elk experiment is een kansveranderlijke veroorzaakt door de storende factoren en gegroepeerd in de kansveranderlijke U:
 \begin{equation}
-y=\beta_{0} + \beta_{1}x
+Y=E(Y)+U=\beta_{0} + \beta_{1}x + U
 \end{equation}
-Dat Platonisch ideaal wordt verstoord door de stoorfactoren en bij elk nieuw experiment stellen we de waarde van de kansvariabele $Y$ vast:
-\begin{equation}
-Y=\beta_{0} + \beta_{1}x + U
-\end{equation}
-waarbij $U$ de storende kansvariabele is. Als we aannnemen dat de gemiddelde waarde van U gelijk is aan nul\sidenote{Veronderstelling 1: E(U)=0} dan is
-\begin{equation}
-E(Y|x)=\beta_{0} + \beta_{1}x
-\end{equation}
+
 De methode van de kleinste kwadraten wordt gebruikt om uit \emph{deze} steekproefwaarden een schatting te maken van $\beta_{0}$ en $\beta_{1}$.
+
+\subsection{Schatting van $\beta_{0}$ en $\beta_{1}$ met de kleinste kwadraten methode}
+De methodiek is bekend: parti\"ele afgeleiden naar $\beta_{0}$ en $\beta_{1}$ moeten gelijk aan nul zijn. Uit die twee vergelijkingen volgen twee getalwaarden $b_{0}$ en $b_{1}$ die berekend worden op basis van de steekproefgegevens. Hierbij worden wat tussenresultaten berekend. 
+\begin{equation}
+  \begin{split}
+  E(X)&=\sum_{i=1}^{i=n}x_{i}\frac{1}{n} \\
+  var(X)&=\frac{\sum_{i=1}^{i=n}(x_{i} - E(X))^2}{n-1}=\frac{SS_{xx}}{n-1} \\
+  E(Y)&=\sum_{i=1}^{i=n}y_{i}\frac{1}{n} \\
+  var(Y)&=\frac{\sum_{i=1}^{i=n}(y_{i} - E(Y))^2}{n-1}=\frac{SS_{yy}}{n-1} \\
+  covar(X,Y)&=\frac{\sum_{i=1}^{i=n}(x_{i}-\bar(x))(y_{i}-\bar{y})}{n-1}=\frac{S_{xy}}{n-1}
+  \end{split}
+\end{equation}
+
+<<echo=FALSE>>=
+gem_x <- sum(geg$x)/n
+ss_xx <- sum((geg$x-gem_x)^2)
+var_x <- ss_xx/(n-1)
+gem_y <- sum(geg$y)/n
+ss_yy <- sum((geg$y - gem_y)^2)
+var_y <- ss_yy/(n-1)
+s_xy <- sum((geg$x-gem_x)*(geg$y-gem_y))
+covar_xy <- s_xy/(n-1)
+b1 <- s_xy/ss_xx
+b0 <- gem_y - b1*gem_x
+geg$diffx <- geg$x - gem_x
+geg$diffx2 <- (geg$x - gem_x)^2
+geg$diffy <- geg$y - gem_y
+geg$diffy2 <- (geg$y - gem_y)^2
+@
+
+\begin{center}
+\begin{tabular}{ r l }
+ $\bar{x}=$ & \Sexpr{gem_x}  \\
+ $SS_{xx}=$ & \Sexpr{ss_xx}  \\
+ $var(x)=$ & \Sexpr{var_x} \\
+ $\bar{y}=$ & \Sexpr{gem_y} \\
+ $SS_{yy}=$ & \Sexpr{ss_yy} \\
+ $var(y)=$ & \Sexpr{var_y} \\
+ $S_{xy}=$ & \Sexpr{s_xy} \\
+ $covar(x,y)=$ & \Sexpr{covar_xy} \\
+ $b_{1}=\frac{\sum\limits_{i=1}^{i=n} (x_{i}-\bar{x})(y_{i}-\bar{y})}{\sum\limits_{i=1}^{i=n}(x_{i}-\bar{x})^{2}}=\frac{S_{xy}}{SS_{xx}}=$ & \Sexpr{b1} \\
+ $b_{0}=\bar{y} - b_{1}\bar{x}=$ & \Sexpr{round(b0,1)}
+\end{tabular}
+\end{center}
+
+Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en de fouten bepaald worden:
+\begin{equation}
+  \begin{split}
+  \hat{y}_{i} &= b_{0}+b_{1}x_{i} \\
+  u_{i}&= y_{i} - \hat{y}_{i}
+  \end{split}
+\end{equation}
+
+<<echo=FALSE>>=
+geg$yhat <- round(b0 + b1*geg$x, 0)
+geg$u <- geg$y - geg$yhat
+geg$ux <- geg$x*geg$u
+som <- round(colSums(geg),0)
+geg <- rbind(geg,som)
+@
+
+<<>>=
+geg
+@
+\medskip
+De som van de afwijkingen ($\sum_{i=1}^{i=n}u_{i}=0$) en de afwijkingen en de onafhankelijke variabele zijn ortogonaal ($\sum_{i=1}^{i=n}u_{i}x_{i}=0$).
+
+\subsection{Eigenschappen van de kleinste kwadratenschatters}
+
+\newthought{Na het uitvoeren van een nieuw experiment} krijg je andere waarden voor $y_{i}$ (niet voor $x_{i}$!). Daaruit volgt dat $SS_{xx}$ hetzelfde blijft, maar $SS_{yy}$ en $S_{xy}$ veranderen. Daardoor verandert $b_{1}=\frac{S_{xy}}{SS_{xx}}$ en dus ook $b_{0}=\bar{y}-b_{1}\bar{x}$. Het toeval dat de fouten U genereert, zal dus ook de kleinste kwadratenschatters be\"ivloeden. Dit betekent dat $b_{0}$ en $b_{1}$ manifestaties zijn van kansvariabelen $B_{0}$ en $B_{1}$.
+
+We kunnen bewijzen\sidenote{''Kwantitatieve beleidsmethoden: enkelvoudige en meervoudige regressie", Peter Goos, 2014, pp. 14 e.v.} dat $b_{0}$ en $b_{1}$ onvertekende schatters zijn van de Platonische $\beta_{0}$ en $\beta_{1}$:
+\begin{equation}
+  \begin{split}
+  E(B_{0})&=\beta_{0} \\
+  E(B_{1})&=\beta_{1}
+  \end{split}
+\end{equation}
+
+We kunnen ook de variantie (en dus de standaardafwijking) van $B_{0}$ en $B_{1}$ berekenen, mits wat bijkomende voorwaarden. De nieuwe veronderstellingen zijn:
+\begin{itemize}
+  \item \emph{homoscedasticiteit}: $var(U_{i})=\sigma^{2}=constant$\sidenote{Veronderstelling 3: de variantie van alle fouttermen is gelijk}
+  \item \emph{onafhankelijkheid van de fouttermen}: $cov(U_{i},U_{j})=0$ voor $i \neq j$
+\end{itemize}
+
+In dat geval is
+\begin{equation}
+  \begin{split}
+  var(B_{0}) &= \frac{\sigma^{2}}{SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} \\
+  var(B_{1}) &= \frac{\sigma^{2}}{SS_{xx}} \\
+  cov(B_{0}, B_{1}) &= -\frac{\sigma^{2}}{SS_{xx}}\bar{x}
+  \end{split}
+\end{equation}
+
+We zien overal de breuk $\frac{\sigma^{2}}{SS_{xx}}$ opduiken, met in de teller de \emph{onbekende} variantie van de foutterm $\sigma^{2}$ en in de noemer de \emph{constante} $SS_{xx}$.
+
+De \emph{Gauss-Markov stelling} toont aan dat de schatters voor $\beta_{0}$ $\beta_{1}$ die we bekomen via de kleinste kwadratenmethod niet alleen onvertekend zijn, maar bovendien de kleinste variantie hebben van alle onvertekende schatters die lineair zijn in de responsen $Y_{i}$.
+
+\subsection{Een schatter voor $\sigma^{2}$}
+
+De varianties van $B_{0}$ en $B_{1}$ zijn afhankelijk van de (constant veronderstelde) variantie van de foutterm. Aangezien $B_{0}$, $B_{1}$ en $Y_{i}$ kansvariabelen zijn, zal $\hat{U}_{i}=Y_{i}-B_{0}-B_{1}x_{i}$ ook een kansveranderlijke zijn en dus ook de som van de kwadraten ervan (SSE= Sum of Squared Errors):
+\begin{equation}
+SSE=\sum\limits_{i=1}^{i=n}\hat{U_{i}}^{2}=\sum\limits_{i=1}^{i=n}(Y_{i}-B_{0}-B_{1}x_{i})^{2}
+\end{equation}
+
+Het aantal vrijheidsgraden van SSE is (n-2) omdat twee vrijheidsgraden verloren gaan bij de schatting van $B_{0}$ en $B_{1}$. Men kan aantonen dat
+\begin{equation}
+E(\frac{SSE}{n-2})=E(MSE)=\sigma^{2}
+\end{equation}
+
+Voor \'e\'en bepaald experiment krijgt de kansveranderlijke SSE een concrete waarde nl;
+\begin{equation}
+sse=\sum\limits_{i=1}^{i=n}\hat{u_{i}}^{2}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}
+\end{equation}
+
+Een schatter voor de onbekende $\sigma^{2}$ is dus
+\begin{equation}
+s^{2}=\frac{sse}{n-2}=\frac{\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}}{n-2}=\frac{u_{i}^{2}}{n-2}
+\end{equation}
+
+<<echo=FALSE>>=
+sse <- sum(geg$u^2)
+s_sq <- round(sse/(n-2),2)
+@
+
+In dit voorbeeld is $s^{2}=$\Sexpr{s_sq}. En dus zijn de schatters voor de variantie van $B_{0}$, $B_{1}$ en hun covariantie gelijk aan:
+
+\begin{equation}
+  \begin{split}
+  s^{2}_{B_{0}} &= \frac{s^{2}}{SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} = \frac{sse^{2}}{(n-2)SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} \\
+  s^{2}_{B_{1}} &= \frac{s^{2}}{SS_{xx}} =  \frac{sse^{2}}{(n-2)SS_{xx}}\\
+  s_{B_{0}, B_{1}} &= -\frac{s^{2}}{SS_{xx}}\bar{x} = -\frac{sse^{2}}{(n-2)SS_{xx}}\bar{x}
+  \end{split}
+\end{equation}
+
+\subsection{Betrouwbaarheidsintervallen voor $\beta_{0}$ en $\beta_{1}$}
+Als we veronderstellen\sidenote{Veronderstelling 4: de kansvariabelen $U_{i}$ zijn normaal verdeeld}, dan volgt daaruit dat ook de kansvariabelen $Y_{i}$ en dus ook $Y$ normaal verdeeld zijn (de som van een constante $E(Y_{i})$ en een normaal verdeelde kansvariabele). Aangezien de kleinste kwadratenschatters $B_{0}$ en $B_{1}$ lineaire combinaties zijn van de waarnemingen $Y_{i}$ zullen die ook normaal verdeeld zijn. We kennen hun gemiddelde waarde en hun variantie en kunnen dus direct schrijven dat:
+\begin{equation}
+  \begin{split}
+  B_{0} &\sim N(\beta_{0}, \frac{\sigma}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})} \\
+  B_{1} &\sim N(\beta_{1}, \frac{\sigma}{\sqrt{SS_{xx}}})
+  \end{split}
+\end{equation}
+
+We kennen de juiste waarde van $\sigma$ niet, maar wel de schatter ervan $s$. Dan weten we dat:
+\begin{equation}
+  \begin{split}
+  \frac{B_{0} - \beta_{0}}{\frac{\sigma}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})}}  &\sim T_{(n-2)}  \\
+  \frac{B_{1} - \beta_{1}}{\frac{\sigma}{\sqrt{SS_{xx}}}} &\sim T_{n-2}
+  \end{split}
+\end{equation}
 
 \end{document}
