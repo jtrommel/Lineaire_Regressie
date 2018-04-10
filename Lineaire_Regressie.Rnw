@@ -226,12 +226,13 @@ Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en de fouten
 geg$yhat <- round(b0 + b1*geg$x, 2)
 geg$u <- geg$y - geg$yhat
 geg$ux <- geg$x*geg$u
+tabel <- geg
 som <- round(colSums(geg),0)
-geg <- rbind(geg,som)
+tabel <- rbind(tabel,som)
 @
 
 <<>>=
-geg
+tabel
 @
 \medskip
 Wanneer we de parameters $b_{0}$ en $b_{1}$ bepalen met de kleinste kwadraten methode dan heeft de berekende rechte volgende eigenschappen:
@@ -367,5 +368,55 @@ We kunnen ook de nulhypothese $H_{0}: \beta_{1}=0$ testen. De alternatieve hypot
 De toetsveranderlijke is $\phi^{*}=\frac{(b_{1}-\beta_{1})}{s_{b_{1}}}$
 
 Deze is $T_{(n-2)}$-verdeeld. De p-waarde is dan gelijk aan $p=2*(1-F_{T}(|\phi^{*}|,(n-2)))=$\Sexpr{round(2*(1-pt(abs(b1/s_b1),n-2)),3)}.
+
+\subsection{Kwaliteit van het model}
+\newthought{De determinatieco\"effici\"ent}
+\medskip
+Opsplitsen van $SSTO$ in een som van $SSR$ en $SSE$. $SSR$ is de variantie die verklaard wordt door het model, $SSE$ het onverklaarde deel. De determinatieco\"effici\"ent is de verhouding van $SSR$ t.o.v. $SSTO$ en ligt tussen 0 (geen verband) en 1 (perfect lineair verband). De formules:
+\begin{equation}
+  \begin{split}
+  SSTO &= \sum\limits_{i=1}^{i=n}(y_{i}-\bar{y})^{2} \\
+  SSR &= \sum\limits_{i=1}^{i=n}(\hat{y}_{i}-\bar{y})^{2} \\
+  SSE &= \sum\limits_{i=1}^{i=n}(\hat{y}_{i}-y_{i})^{2} \\
+  SSTO &= SSR + SSE \\
+  R^{2} &= \frac{SSR}{SSTO}=1-\frac{SSE}{SSTO} \\
+  R^{2} &= b_{1}^{2}\frac{SS_{xx}}{SS_{yy}}
+  \end{split}
+\end{equation}
+
+<<echo=FALSE>>=
+R_sq <- (b1^2)*ss_xx/ss_yy
+@
+
+In dit voorbeeld is $R^{2}=$\Sexpr{round(R_sq,4)}.
+
+Al het rekenwerk en de tussenresultaten zijn beschikbaar in een lijst die geproduceerd wordt wanneer we R een lineair model laten opmaken:
+
+<<>>=
+lineair_model <- lm(y ~ x, data=geg)
+summary(lineair_model)
+names(lineair_model)
+@
+
+Tussenresultaten, zoals $SS_{xx}$ of $S_{xy}$ zijn niet te vinden.
+  
+\newthought{Je kan de significantie} van het lineair model toetsen door een Analysis Of Variance (anova) te doen van het lineair model. Daarin krijg je een overzicht van de vrijheidsgraden, de sums of squares ($SSR$ en $SSE$) en de daaruit afgeleide F-waarde en de p-waarde.
+
+<<>>=
+anova(lineair_model)
+@
+
+\subsection{Voorspellen gebruik makend van het lineair model}
+\newthought{Voorspellen van $E(Y_{h})$}
+
+We nemen een waarde van de onafhankelijk variabele $x=x_{h}$ en berekenen hiermee de waarde $\hat{y}_{h}=b_{0}+b_{1}x_{h}$. Het model doet een voorspelling voor $E(Y_{h})$, niet voor $y_{h}$ (dat bekijken we in volgende paragraaf). Omdat $B_{0}$ en $B_{1}$ kansvariabelen zijn (normaal verdeeld) zal $Y_{h}$ ook normaal verdeeld zijn met:\sidenote{Goos, pp. 28}
+\begin{equation}
+  \begin{split}
+  E(Y_{h})&=E(B_{0}+B_{1}x_{h})=\beta_{0}+\beta_{1}x_{h} \\
+  var(Y_{h})&= \sigma^{2}\left( \frac{1}{n} + \frac{(x_{h}-\bar{x})^{2}}{SS_{xx}} \right)
+  \end{split}
+\end{equation}
+
+Dat betekent dat de variabele $\frac{(Y_{h}-E(Y_{h}))}{\sqrt{\sigma^{2}\left( \frac{1}{n} + \frac{(x_{h}-\bar{x})^{2}}{SS_{xx}}\right)}}$ T(n-2) verdeeld is, waarmee we een betrouwbaarheidsinterval kunnen berekenen voor $E(Y_{h})$.
 
 \end{document}
