@@ -212,8 +212,9 @@ geg$diffy2 <- (geg$y - gem_y)^2
  $b_{0}=\bar{y} - b_{1}\bar{x}=$ & \Sexpr{round(b0,1)}
 \end{tabular}
 \end{center}
+\medskip
+Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en de fouten bepaald worden. De onderste rij geeft de som van alle kolommen.
 
-Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en de fouten bepaald worden:
 \begin{equation}
   \begin{split}
   \hat{y}_{i} &= b_{0}+b_{1}x_{i} \\
@@ -222,7 +223,7 @@ Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en de fouten
 \end{equation}
 
 <<echo=FALSE>>=
-geg$yhat <- round(b0 + b1*geg$x, 0)
+geg$yhat <- round(b0 + b1*geg$x, 2)
 geg$u <- geg$y - geg$yhat
 geg$ux <- geg$x*geg$u
 som <- round(colSums(geg),0)
@@ -233,13 +234,21 @@ geg <- rbind(geg,som)
 geg
 @
 \medskip
-De som van de afwijkingen ($\sum_{i=1}^{i=n}u_{i}=0$) en de afwijkingen en de onafhankelijke variabele zijn ortogonaal ($\sum_{i=1}^{i=n}u_{i}x_{i}=0$).
+Wanneer we de parameters $b_{0}$ en $b_{1}$ bepalen met de kleinste kwadraten methode dan heeft de berekende rechte volgende eigenschappen:
+\begin{itemize}
+  \item de rechte gaat door het zwaartepunt $(\bar{x},\bar{y})$. Dit volgt uit de vergelijking voor $b_{0}$ die we kunnen herschrijven als $\bar{y}=b_{0}+b_{1}\bar{x}$.
+  \item de som van de afwijkingen tussen de gemeten waarden $y_{i}$ en de berekende waarden $\hat{y}_{i}$ (de fouttermen $u_{i}$) is nul. Dat volgt uit
+  \begin{equation}
+  \sum\limits_{i=1}^{i=n}u_{i}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})=n\bar{y}-nb_{0}-nb_{1}\bar{x}=n(\bar{y}-b_{0}-b_{1}\bar{x})=0
+  \end{equation}
+  \item de afwijkingen $u_{i}$ en de onafhankelijke waarden $x_{i}$ zijn ortogonaal. Omslachtig bewijs\sidenote{''Kwantitatieve beleidsmethoden: enkelvoudige en meervoudige regressie", Peter Goos, 2014, pp. 13}
+\end{itemize}
 
 \subsection{Eigenschappen van de kleinste kwadratenschatters}
 
 \newthought{Na het uitvoeren van een nieuw experiment} krijg je andere waarden voor $y_{i}$ (niet voor $x_{i}$!). Daaruit volgt dat $SS_{xx}$ hetzelfde blijft, maar $SS_{yy}$ en $S_{xy}$ veranderen. Daardoor verandert $b_{1}=\frac{S_{xy}}{SS_{xx}}$ en dus ook $b_{0}=\bar{y}-b_{1}\bar{x}$. Het toeval dat de fouten U genereert, zal dus ook de kleinste kwadratenschatters be\"ivloeden. Dit betekent dat $b_{0}$ en $b_{1}$ manifestaties zijn van kansvariabelen $B_{0}$ en $B_{1}$.
 
-We kunnen bewijzen\sidenote{''Kwantitatieve beleidsmethoden: enkelvoudige en meervoudige regressie", Peter Goos, 2014, pp. 14 e.v.} dat $b_{0}$ en $b_{1}$ onvertekende schatters zijn van de Platonische $\beta_{0}$ en $\beta_{1}$:
+We kunnen bewijzen\sidenote{Goos pp. 14 e.v.} dat $b_{0}$ en $b_{1}$ onvertekende schatters zijn van de Platonische $\beta_{0}$ en $\beta_{1}$:
 \begin{equation}
   \begin{split}
   E(B_{0})&=\beta_{0} \\
@@ -291,10 +300,10 @@ s^{2}=\frac{sse}{n-2}=\frac{\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}}
 <<echo=FALSE>>=
 sse <- sum(geg$u^2)
 s_sq <- round(sse/(n-2),2)
+s <- sqrt(s_sq)
 @
 
-In dit voorbeeld is $s^{2}=$\Sexpr{s_sq}. En dus zijn de schatters voor de variantie van $B_{0}$, $B_{1}$ en hun covariantie gelijk aan:
-
+In dit voorbeeld is $s^{2}=$\Sexpr{s_sq}. De schatters voor de variantie van $B_{0}$, $B_{1}$ en hun covariantie worden gegeven door:
 \begin{equation}
   \begin{split}
   s^{2}_{B_{0}} &= \frac{s^{2}}{SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} = \frac{sse^{2}}{(n-2)SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} \\
@@ -302,6 +311,13 @@ In dit voorbeeld is $s^{2}=$\Sexpr{s_sq}. En dus zijn de schatters voor de varia
   s_{B_{0}, B_{1}} &= -\frac{s^{2}}{SS_{xx}}\bar{x} = -\frac{sse^{2}}{(n-2)SS_{xx}}\bar{x}
   \end{split}
 \end{equation}
+
+<<echo=FALSE>>=
+s_b0 <- (s/sqrt(ss_xx))*(sqrt(sum(geg$x^2))/n)
+s_b1 <- (s/sqrt(ss_xx))
+@
+
+De schatting voor de standaardafwijking van $b_{0}$ is \Sexpr{round(s_b0,2)} en van $b_{1}$ is \Sexpr{round(s_b1,2)}.
 
 \subsection{Betrouwbaarheidsintervallen voor $\beta_{0}$ en $\beta_{1}$}
 Als we veronderstellen\sidenote{Veronderstelling 4: de kansvariabelen $U_{i}$ zijn normaal verdeeld}, dan volgt daaruit dat ook de kansvariabelen $Y_{i}$ en dus ook $Y$ normaal verdeeld zijn (de som van een constante $E(Y_{i})$ en een normaal verdeelde kansvariabele). Aangezien de kleinste kwadratenschatters $B_{0}$ en $B_{1}$ lineaire combinaties zijn van de waarnemingen $Y_{i}$ zullen die ook normaal verdeeld zijn. We kennen hun gemiddelde waarde en hun variantie en kunnen dus direct schrijven dat:
@@ -315,9 +331,41 @@ Als we veronderstellen\sidenote{Veronderstelling 4: de kansvariabelen $U_{i}$ zi
 We kennen de juiste waarde van $\sigma$ niet, maar wel de schatter ervan $s$. Dan weten we dat:
 \begin{equation}
   \begin{split}
-  \frac{B_{0} - \beta_{0}}{\frac{\sigma}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})}}  &\sim T_{(n-2)}  \\
-  \frac{B_{1} - \beta_{1}}{\frac{\sigma}{\sqrt{SS_{xx}}}} &\sim T_{n-2}
+  \frac{B_{0} - \beta_{0}}{\frac{s}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})}}  &\sim T_{(n-2)}  \\
+  \frac{B_{1} - \beta_{1}}{\frac{s}{\sqrt{SS_{xx}}}} &\sim T_{n-2}
   \end{split}
 \end{equation}
+
+Hiermee kunnen we intervallen bepalen voor $\beta_{0}$ en $\beta_{1}$ met een betrouwbaarheid $\alpha$:
+\begin{equation}
+  \begin{split}
+  t_{0}&=F_{T}^{-1}(1-\frac{\alpha}{2}, n-2) \\
+  b_{0} - t_{0}\frac{s}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})} &< \beta_{0} < b_{0} + t_{0}\frac{s}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})} \\
+  b_{1}-t_{0}\frac{s}{\sqrt{SS_{xx}}} &< \beta_{1} <  b_{1}+t_{0}\frac{s}{\sqrt{SS_{xx}}}
+  \end{split}
+\end{equation}
+
+In R the inverse cumulatieve kansfunctie is $t_{0}=qt(1-\frac{\alpha}{2}, n-2)$. In dit voorbeeld zijn de 95\%-betrouwbaarheidsintervallen:
+<<echo=FALSE>>=
+betrouwbaarheid <- 0.95
+alpha <- 1 - betrouwbaarheid
+t0 <- qt(1 - alpha/2, n-2)
+ogbeta0 <- b0 - t0*s_b0
+bgbeta0 <- b0 + t0*s_b0
+ogbeta1 <- b1 - t0*s_b1
+bgbeta1 <- b1 + t0*s_b1
+@
+\begin{equation}
+  \begin{split}
+  \Sexpr{round(ogbeta0,2)} &< \beta_{0} < \Sexpr{round(bgbeta0,2)} \\
+  \Sexpr{round(ogbeta1,2)} &< \beta_{1} < \Sexpr{round(bgbeta1,2)}
+  \end{split}
+\end{equation}
+
+We kunnen ook de nulhypothese $H_{0}: \beta_{1}=0$ testen. De alternatieve hypothese is $H_{a}: \beta_{1} \neq 0$. Het is een tweezijdige toets. 
+
+De toetsveranderlijke is $\phi^{*}=\frac{(b_{1}-\beta_{1})}{s_{b_{1}}}$
+
+Deze is $T_{(n-2)}$-verdeeld. De p-waarde is dan gelijk aan $p=2*(1-F_{T}(|\phi^{*}|,(n-2)))=$\Sexpr{round(2*(1-pt(abs(b1/s_b1),n-2)),3)}.
 
 \end{document}
