@@ -300,11 +300,11 @@ s^{2}=\frac{sse}{n-2}=\frac{\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}}
 
 <<echo=FALSE>>=
 sse <- sum(geg$u^2)
-s_sq <- round(sse/(n-2),2)
+s_sq <- sse/(n-2)
 s <- sqrt(s_sq)
 @
 
-In dit voorbeeld is $s^{2}=$\Sexpr{s_sq}. De schatters voor de variantie van $B_{0}$, $B_{1}$ en hun covariantie worden gegeven door:
+In dit voorbeeld is $s^{2}=$\Sexpr{round(s_sq,2)}. De schatters voor de variantie van $B_{0}$, $B_{1}$ en hun covariantie worden gegeven door:
 \begin{equation}
   \begin{split}
   s^{2}_{B_{0}} &= \frac{s^{2}}{SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} = \frac{sse^{2}}{(n-2)SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} \\
@@ -398,8 +398,9 @@ summary(lineair_model)
 names(lineair_model)
 @
 
+\medskip
 Tussenresultaten, zoals $SS_{xx}$ of $S_{xy}$ zijn niet te vinden.
-  
+
 \newthought{Je kan de significantie} van het lineair model toetsen door een Analysis Of Variance (anova) te doen van het lineair model. Daarin krijg je een overzicht van de vrijheidsgraden, de sums of squares ($SSR$ en $SSE$) en de daaruit afgeleide F-waarde en de p-waarde.
 
 <<>>=
@@ -417,6 +418,66 @@ We nemen een waarde van de onafhankelijk variabele $x=x_{h}$ en berekenen hierme
   \end{split}
 \end{equation}
 
-Dat betekent dat de variabele $\frac{(Y_{h}-E(Y_{h}))}{\sqrt{\sigma^{2}\left( \frac{1}{n} + \frac{(x_{h}-\bar{x})^{2}}{SS_{xx}}\right)}}$ T(n-2) verdeeld is, waarmee we een betrouwbaarheidsinterval kunnen berekenen voor $E(Y_{h})$.
+Dat betekent dat de variabele $\frac{(Y_{h}-E(Y_{h}))}{\sqrt{\sigma^{2}\left( \frac{1}{n} + \frac{(x_{h}-\bar{x})^{2}}{SS_{xx}}\right)}}$ T(n-2) verdeeld is, waarmee we een betrouwbaarheidsinterval kunnen berekenen voor $E(Y_{h})$:
+
+\begin{equation}
+  \begin{split}
+  t_{0}&=F_{T}^{-1}(1-\frac{\alpha}{2}, n-2) \\
+  \hat{Y}_{h}-t_{0}\sqrt{s^{2}\left( \frac{1}{n} + \frac{(x_{h}-\bar{x})^{2}}{SS_{xx}}\right)} &< E(Y_{h}) < \hat{Y}_{h}+t_{0}\sqrt{s^{2}\left( \frac{1}{n} + \frac{(x_{h}-\bar{x})^{2}}{SS_{xx}}\right)}
+  \end{split}
+\end{equation}
+
+<<echo=FALSE>>=
+x_h <- c(1:5)
+betrouwbaarheid <- 0.95
+alpha <- 1 - betrouwbaarheid
+t0 <- qt(1 - alpha/2, n-2)
+s_Eyh <- s*sqrt((1/n + ((x_h - gem_x)^2)/ss_xx))
+Eyh <- b0 + b1*x_h
+ogEyh <- Eyh - t0*s_Eyh
+bgEyh <- Eyh + t0*s_Eyh
+grenzen_Eyh <- data.frame(xh=x_h, fit= Eyh, ondergrens=ogEyh, bovengrens=bgEyh)
+@
+
+<<>>=
+grenzen_Eyh
+@
+
+In R gebruiken we de \emph{predict} functie: je start met de $x_{h}$-waarden waarvoor je een voorspelling van $E(y_{h})$ wil. Die moeten in een data-frame geplaatst met als kolomnaam dezelfde naam als diegene die gebruikt werd voor de onafhankelijke veranderlijke bij de opstelling van het lineair model (in dit gevel $x$). Je kan dan de voorspelde waarde(n) en de $(1-\alpha)$ onder- en bovengrens. Bijkomende info is mogelijk bv. de standard error.
+
+<<>>=
+pred_xh <- data.frame(x=x_h)
+predict(lineair_model, pred_xh, interval= "confidence", level=0.95, se.fit=TRUE)
+@
+
+\newthought{Wanneer je de waarde van een nieuw experiment} $y_{h}$ wil voorspellen dan volgt uit:
+\begin{equation}
+Y_{h}=E(Y_{h}) + U_{h} = \hat{Y}_{h} + U_{h}
+\end{equation}
+
+dat $Y_{h}$ ook normaal zal verdeeld zijn omdat $U \sim N(0, \sigma)$ verdeeld is. De gemiddelde waarde van $Y_{h}$ zal dus ook gelijk zijn aan $\hat{Y}_{h}$ en de variantie van $Y_{h}$ zal gelijk zijn aan de variantie van $E(Y_{h})$ plus de variantie van $U_{h}=\sigma^{2}$. Het betrouwbaarheidsinterval voor $Y_{h}$ wordt dus wat groter:
+\begin{equation}
+  \begin{split}
+  t_{0}&=F_{T}^{-1}(1-\frac{\alpha}{2}, n-2) \\
+  \hat{Y}_{h}-t_{0}\sqrt{s^{2}\left(1 + \frac{1}{n} + \frac{(x_{h}-\bar{x})^{2}}{SS_{xx}}\right)} &< Y_{h} < \hat{Y}_{h}+t_{0}\sqrt{s^{2}\left(1 + \frac{1}{n} + \frac{(x_{h}-\bar{x})^{2}}{SS_{xx}}\right)}
+  \end{split}
+\end{equation}
+
+<<echo=FALSE>>=
+s_yh <- s*sqrt((1 + 1/n + ((x_h - gem_x)^2)/ss_xx))
+ogyh <- Eyh - t0*s_yh
+bgyh <- Eyh + t0*s_yh
+grenzen_yh <- data.frame(xh=x_h, fit=Eyh, ondergrens=ogyh, bovengrens=bgyh)
+@
+
+<<>>=
+grenzen_yh
+@
+
+In R gebruiken we opnieuw de \emph{predict} functie met als keuze "predict" voor de parameter \emph{interval}:
+
+<<>>=
+predict(lineair_model, pred_xh, interval= "predict", level=0.95)
+@
 
 \end{document}
