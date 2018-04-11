@@ -60,6 +60,7 @@
 
 <<echo=FALSE>>=
 library(tidyverse)
+library(broom)
 @
 
 % Setting the ggplot theme:
@@ -260,7 +261,7 @@ We kunnen bewijzen\sidenote{Goos pp. 14 e.v.} dat $b_{0}$ en $b_{1}$ onvertekend
 We kunnen ook de variantie (en dus de standaardafwijking) van $B_{0}$ en $B_{1}$ berekenen, mits wat bijkomende voorwaarden. De nieuwe veronderstellingen zijn:
 \begin{itemize}
   \item \emph{homoscedasticiteit}: $var(U_{i})=\sigma^{2}=constant$\sidenote{Veronderstelling 3: de variantie van alle fouttermen is gelijk}
-  \item \emph{onafhankelijkheid van de fouttermen}: $cov(U_{i},U_{j})=0$ voor $i \neq j$
+  \item \emph{onafhankelijkheid van de fouttermen}: $cov(U_{i},U_{j})=0$ voor $i \neq j$\sidenote{Veronderstelling 4}
 \end{itemize}
 
 In dat geval is
@@ -321,7 +322,7 @@ s_b1 <- (s/sqrt(ss_xx))
 De schatting voor de standaardafwijking van $b_{0}$ is \Sexpr{round(s_b0,2)} en van $b_{1}$ is \Sexpr{round(s_b1,2)}.
 
 \subsection{Betrouwbaarheidsintervallen voor $\beta_{0}$ en $\beta_{1}$}
-Als we veronderstellen\sidenote{Veronderstelling 4: de kansvariabelen $U_{i}$ zijn normaal verdeeld}, dan volgt daaruit dat ook de kansvariabelen $Y_{i}$ en dus ook $Y$ normaal verdeeld zijn (de som van een constante $E(Y_{i})$ en een normaal verdeelde kansvariabele). Aangezien de kleinste kwadratenschatters $B_{0}$ en $B_{1}$ lineaire combinaties zijn van de waarnemingen $Y_{i}$ zullen die ook normaal verdeeld zijn. We kennen hun gemiddelde waarde en hun variantie en kunnen dus direct schrijven dat:
+Als we veronderstellen\sidenote{Veronderstelling 5: de kansvariabelen $U_{i}$ zijn normaal verdeeld}, dan volgt daaruit dat ook de kansvariabelen $Y_{i}$ en dus ook $Y$ normaal verdeeld zijn (de som van een constante $E(Y_{i})$ en een normaal verdeelde kansvariabele). Aangezien de kleinste kwadratenschatters $B_{0}$ en $B_{1}$ lineaire combinaties zijn van de waarnemingen $Y_{i}$ zullen die ook normaal verdeeld zijn. We kennen hun gemiddelde waarde en hun variantie en kunnen dus direct schrijven dat:
 \begin{equation}
   \begin{split}
   B_{0} &\sim N(\beta_{0}, \frac{\sigma}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})} \\
@@ -480,4 +481,25 @@ In R gebruiken we opnieuw de \emph{predict} functie met als keuze "predict" voor
 predict(lineair_model, pred_xh, interval= "predict", level=0.95)
 @
 
+\subsection{Gebruik van package ''broom"}
+Dit package omvat 3 functies: ''tidy", ''augment" en ''glance". Hierdoor wordt de informatie die in het model object zit (meestal een lijst) omgezet naar een data.frame zodat je daar veel gemakkelijker onderdelen uit kan oproepen.
+
+<<>>=
+broom::tidy(lineair_model)
+broom::augment(lineair_model)
+broom::glance(lineair_model)
+@
+
+\subsection{Controle van de veronderstellingen}
+
+\newthought{Veronderstelling 1}: $E(U_{i})=0$
+
+\newthought{Veronderstelling 2}: $E(Y)=\beta_{0}+\beta_{1}x$
+Behalve indien je theo-retische gronden hebt om dit functievoor-schrift voor te stellen (en dan spreken we over een regressie en niet een corelatie), zie ik geen mogelijkheid om dit te controleren. Ik vermoed dat deze aanname meestal puur visueel gebeurt.
+
+\newthought{Veronderstelling 3}: $var(U_{i})=\sigma^{2}=constant$
+
+\newthought{Veronderstelling 4}: $cov(U_{i},U_{j})=0$ voor $i \neq j$
+
+\newthought{Veronderstelling 5}: $U \sim N(0,\sigma)$
 \end{document}
