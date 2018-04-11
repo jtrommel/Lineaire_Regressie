@@ -493,11 +493,45 @@ broom::glance(lineair_model)
 \subsection{Controle van de veronderstellingen}
 
 \newthought{Veronderstelling 1}: $E(U_{i})=0$
+Behalve wanneer er herhalingsmetingen zijn, kennen we geen meerdere waarden voor $y_{i}$, en dus ook geen meerdere waarden voor $u_{i}$. We kunnen dus niet nagaan of $E(U_{i})=0$.  Maar indien we ervan uitgaan (Veronderstelling 5) dat alle $U_{i} \sim N(0,\sigma)$ dan heeft de verzameling van alle waarden van $U_{i}$ (de verzameling van $U$) een gemengde kansverdeling die opgebouwd wordt uit de kansverdelingen van de deelverzamelingen\sidenote{zie Mixture distribution}:
+\begin{equation}
+  \begin{split}
+  f(x)&=\sum\limits_{i=1}^{i=n}w_{i}p_{i}(x) \\
+  F(x)&=\sum\limits_{i=1}^{i=n}w_{i}P_{i}(x)
+  \end{split}
+\end{equation}
+
+waarbij $f(x)$ de kansdensiteitsfunctie is van het totaal en $p_{i}(x)$ de kansdensiteitsfunctie is van deelverzameling i. De hoofdletters staan voor de cumulatieve kansfuncties. De wegingsfactoren $w_{i}$ zullen in dit geval constant zijn en gelijk aan $\frac{1}{n}$ omdat we voor elke van de n x-waarden slechts \'e\'en waarde voor $u_{i}$ hebben. De kansdichtheidsfunctie van $U$ is dus gelijk aan:
+\begin{equation}
+f(x)=\sum\limits_{i=1}^{i=n}\frac{1}{n}N(0,\sigma)(x)=N(0,\sigma)
+\end{equation}
+
+De controle of $E(U_{i})=0$ komt dus neer op de controle $E(U)=0$. De beste schatter daarvoor is $E(u_{i})$ en deze is, bij een lineair verband en gebruik van de kleinste kwadraten methode steeds gelijk aan nul. \underline{Samenvatting}: hier valt niet te veel te controleren. 
 
 \newthought{Veronderstelling 2}: $E(Y)=\beta_{0}+\beta_{1}x$
 Behalve indien je theo-retische gronden hebt om dit functievoor-schrift voor te stellen (en dan spreken we over een regressie en niet een corelatie), zie ik geen mogelijkheid om dit te controleren. Ik vermoed dat deze aanname meestal puur visueel gebeurt.
 
 \newthought{Veronderstelling 3}: $var(U_{i})=\sigma^{2}=constant$
+Opnieuw kennen we meestal slechts \'e\'en waarde van $u_{i}$ voor elke waarde van $x_{i}$. Als je die als \'e\'en groep beschouwt (alle $u_{i}$ samen) dan kan je daar wel een boxplot of zo van maken, maar daar kan je maar \'e\'en variantie mee associ\"eren. Je kan dus geen evolutie zien. Je kan wel een grafiek maken van $u_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn". Dat zou een indicator kunnen zijn.
+<<label=controle_veronderstelling3,fig=TRUE,include=FALSE, echo=FALSE>>=
+ggplot(data=geg) +
+  geom_point(aes(x = x, y = u)) +
+  xlim(0, 6) +
+  ylim(-2, 2) +
+  labs(title = "Controle veronderstelling 3", 
+       subtitle = "Constante variantie",
+       x = "onafhankelijke variabele x", 
+       y = "fout u") +
+  JT.theme
+@
+
+\begin{marginfigure}[-2cm]
+\includegraphics[width=1\textwidth]{LinReg-controle_veronderstelling3}
+\caption{ }
+\label{fig:controle_veronderstelling3}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{marginfigure}
+
 
 \newthought{Veronderstelling 4}: $cov(U_{i},U_{j})=0$ voor $i \neq j$
 
