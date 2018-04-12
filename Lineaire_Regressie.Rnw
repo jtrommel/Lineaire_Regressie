@@ -558,8 +558,33 @@ grid.arrange(p1, p2, p3, ncol=3)
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{figure}
 
-
 \newthought{Veronderstelling 4}: $cov(U_{i},U_{j})=0$ voor $i \neq j$
-
+Tricky! Als er onderlinge afhankelijkheid is, dan is het meestal via een derde element, bij voorbeeld \'e\'en van de onafhankelijke variabelen. In dit geval is er maar \'e\'en onafhankelijke variabele en vallen we terug op Figuur~\ref{fig:controle_veronderstelling3}. Daar kunnen we eventueel zien of er een verband is tussen $u_{i}$ en $x_{i}$. Een anders situatie is autocorrelatie waarbij de huidige term afhankelijk is van de vorige. Dat komt veel voor bij tijdsreeksen. Daar is het dus het type van de data (tijdsreeks) dat doet twijfelen aan Veronderstelling 4.
+\newpage
 \newthought{Veronderstelling 5}: $U \sim N(0,\sigma)$
+Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R.
+<<label=controle_veronderstelling5,fig=TRUE,include=FALSE, echo=FALSE>>=
+qqnorm(geg$u, main="normaalplot", xlab="theoretische quantielen", ylab="steekproef quantielen")
+qqline(geg$u)
+@
+We zien (Figuur~\ref{fig:controle_veronderstelling5}) dat de gemiddelde waarde van de fouten (Veronderstelling 1) inderdaad nul is. De normaliteit wordt bevestigd door de ligging t.o.v. de ideale lijn.
+\begin{marginfigure}
+\includegraphics[width=1\textwidth]{LinReg-controle_veronderstelling5}
+\caption{ }
+\label{fig:controle_veronderstelling5}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{marginfigure}
+
+<<label=diagnostic_plots,fig=TRUE,include=FALSE, echo=FALSE>>=
+plot(lineair_model)
+@
+
+\begin{figure}
+\includegraphics[width=1\textwidth]{LinReg-diagnostic_plots}
+\caption{ }
+\label{fig:diagnostic_plots}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{figure}
+
+
 \end{document}
