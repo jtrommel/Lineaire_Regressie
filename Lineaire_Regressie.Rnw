@@ -61,6 +61,7 @@
 <<echo=FALSE>>=
 library(tidyverse)
 library(broom)
+library(gridExtra)
 @
 
 % Setting the ggplot theme:
@@ -506,31 +507,56 @@ waarbij $f(x)$ de kansdensiteitsfunctie is van het totaal en $p_{i}(x)$ de kansd
 f(x)=\sum\limits_{i=1}^{i=n}\frac{1}{n}N(0,\sigma)(x)=N(0,\sigma)
 \end{equation}
 
-De controle of $E(U_{i})=0$ komt dus neer op de controle $E(U)=0$. De beste schatter daarvoor is $E(u_{i})$ en deze is, bij een lineair verband en gebruik van de kleinste kwadraten methode steeds gelijk aan nul. \underline{Samenvatting}: hier valt niet te veel te controleren. 
+De controle of $E(U_{i})=0$ komt dus neer op de controle $E(U)=0$. Dat kunnen we vinden in de samenvatting van het model (''summary") kijken: daar vinden we een analyse van de fouten (residuals) met waarden voor het minimum, Q1, mean, Q3 en het maximum.
+<<>>=
+summary(lineair_model)
+@
+
+We zien dat de gemiddelde waarde inderdaad gelijk is aan nul, maar bij een lineair verband en gebruik van de kleinste kwadraten methode is dit gegarandeerd. \underline{Samenvatting}: hier valt niet te veel te controleren. 
 
 \newthought{Veronderstelling 2}: $E(Y)=\beta_{0}+\beta_{1}x$
 Behalve indien je theo-retische gronden hebt om dit functievoor-schrift voor te stellen (en dan spreken we over een regressie en niet een corelatie), zie ik geen mogelijkheid om dit te controleren. Ik vermoed dat deze aanname meestal puur visueel gebeurt.
 
 \newthought{Veronderstelling 3}: $var(U_{i})=\sigma^{2}=constant$
-Opnieuw kennen we meestal slechts \'e\'en waarde van $u_{i}$ voor elke waarde van $x_{i}$. Als je die als \'e\'en groep beschouwt (alle $u_{i}$ samen) dan kan je daar wel een boxplot of zo van maken, maar daar kan je maar \'e\'en variantie mee associ\"eren. Je kan dus geen evolutie zien. Je kan wel een grafiek maken van $u_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn". Dat zou een indicator kunnen zijn.
+Opnieuw kennen we meestal slechts \'e\'en waarde van $u_{i}$ voor elke waarde van $x_{i}$. Als je die als \'e\'en groep beschouwt (alle $u_{i}$ samen) dan kan je daar wel een boxplot of zo van maken, maar daar kan je maar \'e\'en variantie mee associ\"eren. Je kan dus geen evolutie zien. Je kan wel een grafiek maken van $u_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn". Dat zou een indicator kunnen zijn. Je kan als x-as i.p.v. de onafhankelijke variabele $x$ ook de berekende waarde $\hat{y}$ nemen: dat geeft hetzelfde beeld aangezien er een lineair verband is tussen beide. Tenslotte kan men ook i.p.v. met de fouten $u_{i}$ te werken, ook werken met de gestandaardiseerde fouten $\frac{u_{i}}{s}$: dan is het beeld hetzelfde voor elk model en kan je ook direct zien of er fouten zijn die b.v. meer dan 2 standaardafwijkingen groot zijn.
 <<label=controle_veronderstelling3,fig=TRUE,include=FALSE, echo=FALSE>>=
-ggplot(data=geg) +
+p1 <- ggplot(data=geg) +
   geom_point(aes(x = x, y = u)) +
   xlim(0, 6) +
   ylim(-2, 2) +
-  labs(title = "Controle veronderstelling 3", 
+  labs(title = "Veronderstelling 3", 
        subtitle = "Constante variantie",
        x = "onafhankelijke variabele x", 
        y = "fout u") +
   JT.theme
+p2 <- ggplot(data=geg) +
+  geom_point(aes(x = yhat, y = u)) +
+  xlim(0, 6) +
+  ylim(-2, 2) +
+  labs(title = "Veronderstelling 3", 
+       subtitle = "Constante variantie",
+       x = "berekende waarde van y", 
+       y = "fout u") +
+  JT.theme
+geg$u_stand <- geg$u/s
+p3 <- ggplot(data=geg) +
+  geom_point(aes(x = yhat, y = u_stand)) +
+  xlim(0, 6) +
+  ylim(-2, 2) +
+  labs(title = "Veronderstelling 3", 
+       subtitle = "Constante variantie",
+       x = "berekende waarde van y", 
+       y = "gestandaardiseerde fout u") +
+  JT.theme
+grid.arrange(p1, p2, p3, ncol=3)
 @
 
-\begin{marginfigure}[-2cm]
+\begin{figure}
 \includegraphics[width=1\textwidth]{LinReg-controle_veronderstelling3}
 \caption{ }
 \label{fig:controle_veronderstelling3}
 \setfloatalignment{b}% forces caption to be bottom-aligned
-\end{marginfigure}
+\end{figure}
 
 
 \newthought{Veronderstelling 4}: $cov(U_{i},U_{j})=0$ voor $i \neq j$
