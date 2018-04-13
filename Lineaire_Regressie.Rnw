@@ -62,6 +62,7 @@
 library(tidyverse)
 library(broom)
 library(gridExtra)
+library(car)
 @
 
 % Setting the ggplot theme:
@@ -71,13 +72,13 @@ JT.theme <- theme(panel.border = element_rect(fill = NA, colour = "gray10"),
                   panel.grid.major = element_line(colour = "gray85"),
                   panel.grid.minor = element_line(colour = "gray85"),
                   panel.grid.major.x = element_line(colour = "gray85"),
-                  axis.text = element_text(size = 8 , face = "bold"),
-                  axis.title = element_text(size = 9 , face = "bold"),
-                  plot.title = element_text(size = 12 , face = "bold"),
-                  strip.text = element_text(size = 8 , face = "bold"),
+                  axis.text = element_text(size = 7 , face = "bold"),
+                  axis.title = element_text(size = 8 , face = "bold"),
+                  plot.title = element_text(size = 10 , face = "bold"),
+                  strip.text = element_text(size = 7 , face = "bold"),
                   strip.background = element_rect(colour = "black"),
-                  legend.text = element_text(size = 8),
-                  legend.title = element_text(size = 9 , face = "bold"),
+                  legend.text = element_text(size = 7),
+                  legend.title = element_text(size = 8 , face = "bold"),
                   legend.background = element_rect(fill = "white"),
                   legend.key = element_rect(fill = "white"))
 @
@@ -524,6 +525,7 @@ Dit package omvat 3 functies: ''tidy", ''augment" en ''glance". Hierdoor wordt d
 <<>>=
 broom::tidy(lineair_model)
 broom::augment(lineair_model)
+linmod <- augment(lineair_model) #make model results available in data.frame
 broom::glance(lineair_model)
 @
 
@@ -595,10 +597,17 @@ grid.arrange(p1, p2, p3, ncol=3)
 \end{figure}
 
 \newthought{Veronderstelling 4}: $cov(U_{i},U_{j})=0$ voor $i \neq j$
-Tricky! Als er onderlinge afhankelijkheid is, dan is het meestal via een derde element, bij voorbeeld \'e\'en van de onafhankelijke variabelen. In dit geval is er maar \'e\'en onafhankelijke variabele en vallen we terug op Figuur~\ref{fig:controle_veronderstelling3}. Daar kunnen we eventueel zien of er een verband is tussen $u_{i}$ en $x_{i}$. Een anders situatie is autocorrelatie waarbij de huidige term afhankelijk is van de vorige. Dat komt veel voor bij tijdsreeksen. Daar is het dus het type van de data (tijdsreeks) dat doet twijfelen aan Veronderstelling 4.
-\newpage
+Tricky! Als er onderlinge afhankelijkheid is, dan is het meestal via een derde element, bij voorbeeld \'e\'en van de onafhankelijke variabelen. In dit geval is er maar \'e\'en onafhankelijke variabele en vallen we terug op Figuur~\ref{fig:controle_veronderstelling3}. Daar kunnen we eventueel zien of er een verband is tussen $u_{i}$ en $x_{i}$. Een anders situatie is autocorrelatie waarbij de huidige term afhankelijk is van de vorige. Dat komt veel voor bij tijdsreeksen. Daar is het dus het type van de data (tijdsreeks) dat doet twijfelen aan Veronderstelling 4. De Durbin-Watson test (in het ''car"-package) gaat na of er een lag1-autocorrelatie en, voor die situatie, kunnen we dit nagaan voor de fouttermen:
+
+<<>>=
+durbinWatsonTest(lineair_model)
+@
+
+In dit voorbeeld kunnen we autocorrelatie lag1 uitsluiten.
+
 \newthought{Veronderstelling 5}: $U \sim N(0,\sigma)$
 Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R.
+
 <<label=controle_veronderstelling5,fig=TRUE,include=FALSE, echo=FALSE>>=
 qqnorm(geg$u, main="normaalplot", xlab="theoretische quantielen", ylab="steekproef quantielen")
 qqline(geg$u)
@@ -611,8 +620,15 @@ We zien (Figuur~\ref{fig:controle_veronderstelling5}) dat de gemiddelde waarde v
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
+\newpage
+\newthought{Samenvatting van alle diagnostische plots} (Figuur~\ref{fig:diagnostic_plots}):
+
+<<echo=FALSE>>=
+quantile1 <- qqnorm(linmod$.std.resid)[[1]]
+quantile2 <- qqnorm(linmod$.std.resid)[[2]]
+@
+
 <<label=diagnostic_plots,fig=TRUE,include=FALSE, echo=FALSE>>=
-linmod <- augment(lineair_model) #make model results available in data.frame
 p1 <- ggplot(linmod, aes(.fitted, .resid)) + 
   geom_point() +
   geom_hline(yintercept=0, col="red", linetype="dashed") +
@@ -621,45 +637,52 @@ p1 <- ggplot(linmod, aes(.fitted, .resid)) +
   ggtitle("Residu i.f.v. Berekende waarden") +
   JT.theme
 
-p2 <- ggplot(linmod, aes(qqnorm(.std.resid)[[1]], qqnorm(.std.resid)[[2]])) +
+p2 <- ggplot(linmod, aes(quantile1, quantile2)) +
   geom_point(na.rm = TRUE) +
-  # geom_abline(aes(qqline(.std.resid))) +
-  xlab("Theoretische Quantielen") +
-  ylab("Gestandaardiseerde Residus") +
+  geom_line(aes(quantile2, quantile2), col="red", linetype="dashed") +
+  xlab("Theor. Gestandaard. Quantielen") +
+  ylab("Waarg. Gestandaard. Quantielen") +
   ggtitle("Normplot gestandaardiseerde residus") +
   JT.theme
 
-p3<-ggplot(model, aes(.fitted, sqrt(abs(.stdresid))))+geom_point(na.rm=TRUE)
-    p3<-p3+stat_smooth(method="loess", na.rm = TRUE)+xlab("Fitted Value")
-    p3<-p3+ylab(expression(sqrt("|Standardized residuals|")))
-    p3<-p3+ggtitle("Scale-Location")+theme_bw()
+p3 <- ggplot(linmod, aes(.fitted, sqrt(abs(.std.resid)))) +
+  geom_point(na.rm=TRUE) +
+  xlab("Berekende waarden") +
+  ylab(expression(sqrt("|Gestandaardiseerde residuals|"))) +
+  ggtitle("Scale-Location") +
+  JT.theme
     
-p4<-ggplot(model, aes(seq_along(.cooksd), .cooksd))+geom_bar(stat="identity", position="identity")
-    p4<-p4+xlab("Obs. Number")+ylab("Cook's distance")
-    p4<-p4+ggtitle("Cook's distance")+theme_bw()
+p4 <- ggplot(linmod, aes(seq_along(.cooksd), .cooksd)) +
+  geom_bar(stat="identity", position="identity") +
+  xlab("Obs. Number") +
+  ylab("Cook's distance") +
+  ggtitle("Cook's distance") +
+  JT.theme
     
-p5<-ggplot(model, aes(.hat, .stdresid))+geom_point(aes(size=.cooksd), na.rm=TRUE)
-    p5<-p5+stat_smooth(method="loess", na.rm=TRUE)
-    p5<-p5+xlab("Leverage")+ylab("Standardized Residuals")
-    p5<-p5+ggtitle("Residual vs Leverage Plot")
-    p5<-p5+scale_size_continuous("Cook's Distance", range=c(1,5))
-    p5<-p5+theme_bw()+theme(legend.position="bottom")
+p5 <- ggplot(linmod, aes(.hat, .std.resid)) +
+  geom_point(aes(size=.cooksd), na.rm=TRUE) +
+  xlab("Invloed (leverage)") +
+  ylab("Gestandaardiseerde Residus") +
+  ggtitle("Invloedrijke punten", subtitle="Residual vs Leverage Plot") +
+  scale_size_continuous("Cook's Distance", range=c(1,5)) +
+  JT.theme +
+  theme(legend.position="bottom")
     
-p6<-ggplot(model, aes(.hat, .cooksd))+geom_point(na.rm=TRUE)+stat_smooth(method="loess", na.rm=TRUE)
-    p6<-p6+xlab("Leverage hii")+ylab("Cook's Distance")
-    p6<-p6+ggtitle("Cook's dist vs Leverage hii/(1-hii)")
-    p6<-p6+geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed")
-    p6<-p6+theme_bw()
+p6 <- ggplot(linmod, aes(.hat, .cooksd)) +
+  geom_point(na.rm=TRUE) +
+  xlab("Leverage hii")+ylab("Cook's Distance") +
+  ggtitle("Cook's dist vs Leverage hii/(1-hii)") +
+  geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed") +
+  JT.theme
 
-grid.arrange(p1, p2, p3, p4, p5, p6, ncol=2)
+grid.arrange(p1, p2, p3, p4, p5, p6,ncol=2)
 @
 
-\begin{figure}
+\begin{figure*}
 \includegraphics[width=1\textwidth]{LinReg-diagnostic_plots}
-\caption{ }
+\caption{Samenvatting van alle diagnostische plots}
 \label{fig:diagnostic_plots}
 \setfloatalignment{b}% forces caption to be bottom-aligned
-\end{figure}
-
+\end{figure*}
 
 \end{document}
