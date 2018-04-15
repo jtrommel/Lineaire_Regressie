@@ -84,42 +84,6 @@ JT.theme <- theme(panel.border = element_rect(fill = NA, colour = "gray10"),
 @
 
 % Functions
-<<echo=FALSE>>=
-diagPlot<-function(model){
-    p1<-ggplot(model, aes(.fitted, .resid))+geom_point()
-    p1<-p1+stat_smooth(method="loess")+geom_hline(yintercept=0, col="red", linetype="dashed")
-    p1<-p1+xlab("Fitted values")+ylab("Residuals")
-    p1<-p1+ggtitle("Residual vs Fitted Plot")+theme_bw()
-    
-    p2<-ggplot(model, aes(qqnorm(.stdresid)[[1]], .stdresid))+geom_point(na.rm = TRUE)
-    p2<-p2+geom_abline(aes(qqline(.stdresid)))+xlab("Theoretical Quantiles")+ylab("Standardized Residuals")
-    p2<-p2+ggtitle("Normal Q-Q")+theme_bw()
-    
-    p3<-ggplot(model, aes(.fitted, sqrt(abs(.stdresid))))+geom_point(na.rm=TRUE)
-    p3<-p3+stat_smooth(method="loess", na.rm = TRUE)+xlab("Fitted Value")
-    p3<-p3+ylab(expression(sqrt("|Standardized residuals|")))
-    p3<-p3+ggtitle("Scale-Location")+theme_bw()
-    
-    p4<-ggplot(model, aes(seq_along(.cooksd), .cooksd))+geom_bar(stat="identity", position="identity")
-    p4<-p4+xlab("Obs. Number")+ylab("Cook's distance")
-    p4<-p4+ggtitle("Cook's distance")+theme_bw()
-    
-    p5<-ggplot(model, aes(.hat, .stdresid))+geom_point(aes(size=.cooksd), na.rm=TRUE)
-    p5<-p5+stat_smooth(method="loess", na.rm=TRUE)
-    p5<-p5+xlab("Leverage")+ylab("Standardized Residuals")
-    p5<-p5+ggtitle("Residual vs Leverage Plot")
-    p5<-p5+scale_size_continuous("Cook's Distance", range=c(1,5))
-    p5<-p5+theme_bw()+theme(legend.position="bottom")
-    
-    p6<-ggplot(model, aes(.hat, .cooksd))+geom_point(na.rm=TRUE)+stat_smooth(method="loess", na.rm=TRUE)
-    p6<-p6+xlab("Leverage hii")+ylab("Cook's Distance")
-    p6<-p6+ggtitle("Cook's dist vs Leverage hii/(1-hii)")
-    p6<-p6+geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed")
-    p6<-p6+theme_bw()
-    
-    return(list(rvfPlot=p1, qqPlot=p2, sclLocPlot=p3, cdPlot=p4, rvlevPlot=p5, cvlPlot=p6))
-}
-@
 
 \mainmatter
 
@@ -127,50 +91,89 @@ diagPlot<-function(model){
 
 \section{Inleiding}
 
-We nemen aan dat een responsvariabele $y$ be\"invloed wordt door $n$ onafhankelijke variabelen $x_{i}; i=1 \ldots n$. Maar er zijn ook $k$ onbekende en/of oncontroleerbare storende variabelen $z_{j}; j=1 \ldots k$. We kunnen dit schrijven als:
+Het onderscheid tussen een \emph{functioneel} en een \emph{statistisch} verband is dat de waarnemingen bij een statistisch verband \emph{niet} gelegen zijn op de grafiek, maar in de buurt daarvan (Figuur~\ref{fig:intro1}).
+
+<<label=intro1,fig=TRUE,include=FALSE, echo=FALSE>>=
+N <- 2000
+b0 <- -1
+b1 <- 7
+sigma_U <- 2
+set.seed(2018)
+intro2 <- data.frame(x = runif(N, 1, 5), y=0)
+intro2$y <- b0 + b1*intro2$x + rnorm(N, 0, sigma_U)
+ggplot(data=intro2) +
+  geom_point(aes(x = x, y = y), alpha=0.2) +
+  geom_abline(intercept=-1, slope=7, color="red") +
+  xlim(0, 6) +
+  labs(title = "Een statistisch verband y=f(x)", 
+       x = "onafhankelijke variabele x", 
+       y = "responsvariabele y") +
+  JT.theme
+@
+
+\begin{marginfigure}[0cm]
+\includegraphics[width=1\textwidth]{LinReg-intro1}
+\caption{ }
+\label{fig:intro1}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{marginfigure}
+
+De oorzaak is dat de responsvariabele $y$ niet enkel be\"invloed wordt door $n$ onafhankelijke variabelen $x_{i}; i=1 \ldots n$ maar ook door $k$ onbekende en/of oncontroleerbare storende variabelen $z_{j}; j=1 \ldots k$. We kunnen dit schrijven als:
 
 \begin{equation}
 y=f(x_{1}, x_{2}, \ldots x_{n}; z_{1}, z_{2} \ldots z_{k})
 \end{equation}
 
-Het gevolg hiervan is dat bij herhaalde experimenten met eenzelfde instelling van de onafhankelijke variabelen $x_{i}$, we andere waarden voor de responsvariabele $y$ zullen krijgen. Figuur~\ref{fig:intro} geeft de situatie waarbij we maar \'e\'en onafhankelijke variabele $x$ hebben die op de waarden 1, 2, 3, 4 en 5 wordt ingesteld bij 10 herhalingsmetingen.
-<<label=intro,fig=TRUE,include=FALSE, echo=FALSE>>=
+Het gevolg hiervan is dat bij herhaalde experimenten met eenzelfde instelling van de onafhankelijke variabelen $x_{i}$, we andere waarden voor de responsvariabele $y$ zullen krijgen. Figuur~\ref{fig:intro2} geeft de situatie waarbij we maar \'e\'en onafhankelijke variabele $x$ hebben die op de waarden 1, 2, 3, 4 en 5 wordt ingesteld bij 10 herhalingsmetingen.
+
+<<label=intro2,fig=TRUE,include=FALSE, echo=FALSE>>=
 N <- 10
-b0 <- -0.1
-b1 <- 0.7
+n <- 5
+b0 <- -1
+b1 <- 7
 sigma_U <- 0.5
 set.seed(2018)
-geg <- data.frame(expnr = rep((1:10), each=5), x = rep(seq(1,5),N))
-geg$y <- b0 + b1*geg$x + rnorm(50, 0, sigma_U)
-ggplot(data=geg) +
-  geom_point(aes(x = x, y = y, color=expnr)) +
+intro1 <- data.frame(expnr = rep((1:N), each=n), x = rep(seq(1,n),N), y = 0)
+intro1$y <- b0 + b1*intro1$x + rnorm(n*N, 0, sigma_U)
+ggplot(data=intro1) +
+  geom_point(aes(x = x, y = y, color=factor(expnr))) +
   xlim(0, 6) +
-  ylim(0, 6) +
-  labs(title = "Startgegevens", 
+  labs(title = "Experimentele resultaten", 
        subtitle = "10 herhalingsexperimenten",
        x = "onafhankelijke variabele x", 
        y = "waarneming van responsvariabele y") +
   JT.theme
 @
 
-\begin{marginfigure}[-6cm]
-\includegraphics[width=1\textwidth]{LinReg-intro}
+\begin{marginfigure}[-2cm]
+\includegraphics[width=1\textwidth]{LinReg-intro2}
 \caption{ }
-\label{fig:intro}
+\label{fig:intro2}
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
-De responsvariabele $y$ is omwille van de storende factoren $z_{j}$ een \emph{kansvariabele} $Y$. We nemen aan dat de gemiddelde waarde van $Y$ beschreven wordt door een functie van de onafhankelijke variabelen $x_{i}$. Dat is een soort Platonisch ideaal dat echter voor ons verborgen is: wij zien enkel de schimmige waarnemingen die verstoord worden door de storende factoren. De verstoring vormt het arbitraire element en is dus het kansgedeelte dat we $U$ noemen en waarvan we aannemen\sidenote{Veronderstelling 1: E(U)=0} dat de gemiddelde waarde $E(U)=0$.
+De waarde van de responsvariabele $y_{i}$ is omwille van de storende factoren $z_{j}$ een \emph{kansvariabele} $Y_{i}$. De verstoring vormt het kansgedeelte dat we $U_{i}$ noemen en waarvan we aannemen\sidenote{Veronderstelling 1: $E(U_{i})=0$} dat de gemiddelde waarde $E(U_{i})=0$. We nemen aan dat de gemiddelde waarden van $Y_{i}$ beschreven wordt door een functie van de onafhankelijke variabelen $x_{i}$ en dat deze functie niet enkel geldt voor de waargenomen waarden van $x_{i}$ maar voor alle $x$:
 \begin{equation}
-  \begin{split}  
+  \begin{split}
+  Y_{i}=E(Y_{i}|x_{1}, x_{2}, \ldots x_{n}) + U_{i}&=f(x_{1}, x_{2}, \ldots x_{n}) + U_{i} \\
+  E(Y_{i}|x_{1}, x_{2}, \ldots x_{n})&=f(x_{1}, x_{2}, \ldots x_{n})  + 0 \\
+  & en \\
   Y=E(Y|x_{1}, x_{2}, \ldots x_{n}) + U&=f(x_{1}, x_{2}, \ldots x_{n}) + U \\
   E(Y|x_{1}, x_{2}, \ldots x_{n})&=f(x_{1}, x_{2}, \ldots x_{n})  + 0
   \end{split}
 \end{equation}
 
 \section{Enkelvoudige lineair regressie}
-
-\newthought{Bij een enkelvoudige regressie} is er slechts \'e\'en onafhankelijke variabele x.
+\newthought{Bij een enkelvoudige relatie} is er slechts \'e\'en onafhankelijke variabele $x$ en worden de vergelijkingen:
+\begin{equation}
+  \begin{split}
+  Y_{i}=E(Y_{i}|x_{i}) + U_{i}&=f(x_{i}) + U_{i} \\
+  E(Y_{i}|x_{i})&=f(x_{i})  + 0 \\
+  & en \\
+  Y=E(Y|x) + U&=f(x) + U \\
+  E(Y|x)&=f(x)  + 0 
+  \end{split}
+\end{equation}
 
 \newthought{Het (eenmalige) experiment} geeft volgende resultaten (Figuur~\ref{fig:geg}):
 \subsection{Data}
@@ -201,15 +204,18 @@ We veronderstellen\sidenote{Veronderstelling 2: de vorm van de functie f(x) is $
 E(Y)=\beta_{0} + \beta_{1}x
 \end{equation}
 
-De waarneming $Y$ bij elk experiment is een kansveranderlijke veroorzaakt door de storende factoren en gegroepeerd in de kansveranderlijke U:
+De waarneming $Y$ is een kansveranderlijke veroorzaakt door de storende factoren en gegroepeerd in de kansveranderlijke U:
 \begin{equation}
 Y=E(Y)+U=\beta_{0} + \beta_{1}x + U
 \end{equation}
 
-De methode van de kleinste kwadraten wordt gebruikt om uit \emph{deze} steekproefwaarden een schatting te maken van $\beta_{0}$ en $\beta_{1}$.
-
 \subsection{Schatting van $\beta_{0}$ en $\beta_{1}$ met de kleinste kwadraten methode}
-De methodiek is bekend: parti\"ele afgeleiden naar $\beta_{0}$ en $\beta_{1}$ moeten gelijk aan nul zijn. Uit die twee vergelijkingen volgen twee getalwaarden $b_{0}$ en $b_{1}$ die berekend worden op basis van de steekproefgegevens. Hierbij worden wat tussenresultaten berekend. 
+De methode van de kleinste kwadraten wordt gebruikt om uit \emph{deze} steekproefwaarden een schatting te halen voor $\beta_{0}$ en $\beta_{1}$. De methodiek is bekend: men minimaliseert het criterium:
+\begin{equation}
+Q=\sum\limits_{i=1}^{i=n}\left( Y_{i}-\beta_{0}-\beta_{1}x_{i}  \right)^{2}
+\end{equation}
+
+Daarvoor berekenen we de parti\"ele afgeleiden van $Q$ naar $\beta_{0}$ en $\beta_{1}$ en stellen die gelijk aan nul. Uit de twee vergelijkingen volgen twee getalwaarden $b_{0}$ en $b_{1}$ die berekend worden op basis van de steekproefgegevens. Hierbij worden wat tussenresultaten berekend. 
 \begin{equation}
   \begin{split}
   E(X)&=\sum_{i=1}^{i=n}x_{i}\frac{1}{n} \\
@@ -257,14 +263,14 @@ Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en de fouten
 \begin{equation}
   \begin{split}
   \hat{y}_{i} &= b_{0}+b_{1}x_{i} \\
-  u_{i}&= y_{i} - \hat{y}_{i}
+  \hat{u}_{i}&= y_{i} - \hat{y}_{i}
   \end{split}
 \end{equation}
 
 <<echo=FALSE>>=
 geg$yhat <- round(b0 + b1*geg$x, 2)
-geg$u <- geg$y - geg$yhat
-geg$ux <- geg$x*geg$u
+geg$uhat <- geg$y - geg$yhat
+geg$ux <- geg$x*geg$uhat
 tabel <- geg
 som <- round(colSums(geg),0)
 tabel <- rbind(tabel,som)
@@ -338,7 +344,7 @@ s^{2}=\frac{sse}{n-2}=\frac{\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}}
 \end{equation}
 
 <<echo=FALSE>>=
-sse <- sum(geg$u^2)
+sse <- sum(geg$uhat^2)
 s_sq <- sse/(n-2)
 s <- sqrt(s_sq)
 @
@@ -559,7 +565,7 @@ Behalve indien je theo-retische gronden hebt om dit functievoor-schrift voor te 
 Opnieuw kennen we meestal slechts \'e\'en waarde van $u_{i}$ voor elke waarde van $x_{i}$. Als je die als \'e\'en groep beschouwt (alle $u_{i}$ samen) dan kan je daar wel een boxplot of zo van maken, maar daar kan je maar \'e\'en variantie mee associ\"eren. Je kan dus geen evolutie zien. Je kan wel een grafiek maken van $u_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn". Dat zou een indicator kunnen zijn. Je kan als x-as i.p.v. de onafhankelijke variabele $x$ ook de berekende waarde $\hat{y}$ nemen: dat geeft hetzelfde beeld aangezien er een lineair verband is tussen beide. Tenslotte kan men ook i.p.v. met de fouten $u_{i}$ te werken, ook werken met de gestandaardiseerde fouten $\frac{u_{i}}{s}$: dan is het beeld hetzelfde voor elk model en kan je ook direct zien of er fouten zijn die b.v. meer dan 2 standaardafwijkingen groot zijn.
 <<label=controle_veronderstelling3,fig=TRUE,include=FALSE, echo=FALSE>>=
 p1 <- ggplot(data=geg) +
-  geom_point(aes(x = x, y = u)) +
+  geom_point(aes(x = x, y = uhat)) +
   xlim(0, 6) +
   ylim(-2, 2) +
   labs(title = "Veronderstelling 3", 
@@ -568,7 +574,7 @@ p1 <- ggplot(data=geg) +
        y = "fout u") +
   JT.theme
 p2 <- ggplot(data=geg) +
-  geom_point(aes(x = yhat, y = u)) +
+  geom_point(aes(x = yhat, y = uhat)) +
   xlim(0, 6) +
   ylim(-2, 2) +
   labs(title = "Veronderstelling 3", 
@@ -576,7 +582,7 @@ p2 <- ggplot(data=geg) +
        x = "berekende waarde van y", 
        y = "fout u") +
   JT.theme
-geg$u_stand <- geg$u/s
+geg$u_stand <- geg$uhat/s
 p3 <- ggplot(data=geg) +
   geom_point(aes(x = yhat, y = u_stand)) +
   xlim(0, 6) +
@@ -609,8 +615,8 @@ In dit voorbeeld kunnen we autocorrelatie lag1 uitsluiten.
 Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R.
 
 <<label=controle_veronderstelling5,fig=TRUE,include=FALSE, echo=FALSE>>=
-qqnorm(geg$u, main="normaalplot", xlab="theoretische quantielen", ylab="steekproef quantielen")
-qqline(geg$u)
+qqnorm(geg$uhat, main="normaalplot", xlab="theoretische quantielen", ylab="steekproef quantielen")
+qqline(geg$uhat)
 @
 We zien (Figuur~\ref{fig:controle_veronderstelling5}) dat de gemiddelde waarde van de fouten (Veronderstelling 1) inderdaad nul is. De normaliteit wordt bevestigd door de ligging t.o.v. de ideale lijn.
 \begin{marginfigure}
