@@ -258,24 +258,30 @@ geg$diffy2 <- (geg$y - gem_y)^2
 \end{tabular}
 \end{center}
 \medskip
-Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en de fouten bepaald worden. De onderste rij geeft de som van alle kolommen.
+Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en het verschil tussen de berekende ($\hat{y}_{i}$) en waargenomen waarde ($y_{i}$) bepaald worden. Dat verschil noemen we het \emph{residu} ($r_{i}$):
+\begin{equation}
+r_{i}=y_{i}-\hat{y}_{i}=y_{i}-b_{0}-b_{1}x_{i}
+\end{equation}
+
+Het residu $r_{i}$ is dus niet enkel afhankelijk van de waarneming die verstoord wordt door de storingen gegroepeerd in $U_{i}$, maar ook door de waarden van de steekproef die $b_{0}$ en $b_{1}$ bepalen. De variantie van $r_{i}$ zal dus groter zijn dan de variantie van de foutterm $U_{i}$. We maken daarom een duidelijk onderscheid tussen de foutterm $U(x)$ en de residus $r_{i}$.
 
 \begin{equation}
   \begin{split}
   \hat{y}_{i} &= b_{0}+b_{1}x_{i} \\
-  \hat{u}_{i}&= y_{i} - \hat{y}_{i}
+  r_{i}&= y_{i} - \hat{y}_{i}
   \end{split}
 \end{equation}
 
 <<echo=FALSE>>=
 geg$yhat <- round(b0 + b1*geg$x, 2)
-geg$uhat <- geg$y - geg$yhat
-geg$ux <- geg$x*geg$uhat
+geg$r <- geg$y - geg$yhat
+geg$rx <- geg$x*geg$r
+geg$ryhat <- geg$yhat*geg$r
 tabel <- geg
 som <- round(colSums(geg),0)
 tabel <- rbind(tabel,som)
 @
-
+(De onderste rij geeft de som van alle kolommen.)
 <<>>=
 tabel
 @
@@ -283,11 +289,13 @@ tabel
 Wanneer we de parameters $b_{0}$ en $b_{1}$ bepalen met de kleinste kwadraten methode dan heeft de berekende rechte volgende eigenschappen:
 \begin{itemize}
   \item de rechte gaat door het zwaartepunt $(\bar{x},\bar{y})$. Dit volgt uit de vergelijking voor $b_{0}$ die we kunnen herschrijven als $\bar{y}=b_{0}+b_{1}\bar{x}$.
-  \item de som van de afwijkingen tussen de gemeten waarden $y_{i}$ en de berekende waarden $\hat{y}_{i}$ (de fouttermen $u_{i}$) is nul. Dat volgt uit
+  \item de som van de residus $r_{i}$) is nul. Dat volgt uit
   \begin{equation}
-  \sum\limits_{i=1}^{i=n}u_{i}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})=n\bar{y}-nb_{0}-nb_{1}\bar{x}=n(\bar{y}-b_{0}-b_{1}\bar{x})=0
+  \sum\limits_{i=1}^{i=n}r_{i}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})=n\bar{y}-nb_{0}-nb_{1}\bar{x}=n(\bar{y}-b_{0}-b_{1}\bar{x})=0
   \end{equation}
-  \item de afwijkingen $u_{i}$ en de onafhankelijke waarden $x_{i}$ zijn ortogonaal. Omslachtig bewijs\sidenote{''Kwantitatieve beleidsmethoden: enkelvoudige en meervoudige regressie", Peter Goos, 2014, pp. 13}
+   \item de som van de berekende waarden $y_{i}$ is gelijk aan de som van de waargenomen waarden $y_{i}$: $\sum_{i=1}^{i=n}\hat{y}_{i}=\sum_{i=1}^{i=n}y_{i}$. Dat volgt uit het voorgaande.
+  \item de residus $r_{i}$ en de onafhankelijke waarden $x_{i}$ zijn ortogonaal. Omslachtig bewijs\sidenote{''Kwantitatieve beleidsmethoden: enkelvoudige en meervoudige regressie", Peter Goos, 2014, pp. 13}
+  \item de residus $r_{i}$ en de berekende waarden $\hat{y}_{i}$ zijn ortogonaal. Dat volgt uit het voorgaande en het lineair verband tussen $\hat{Y}$ en $x$.
 \end{itemize}
 
 \subsection{Eigenschappen van de kleinste kwadratenschatters}
@@ -323,7 +331,7 @@ De \emph{Gauss-Markov stelling} toont aan dat de schatters voor $\beta_{0}$ $\be
 
 \subsection{Een schatter voor $\sigma^{2}$}
 
-De varianties van $B_{0}$ en $B_{1}$ zijn afhankelijk van de (constant veronderstelde) variantie van de foutterm. Aangezien $B_{0}$, $B_{1}$ en $Y_{i}$ kansvariabelen zijn, zal $\hat{U}_{i}=Y_{i}-B_{0}-B_{1}x_{i}$ ook een kansveranderlijke zijn en dus ook de som van de kwadraten ervan (SSE= Sum of Squared Errors):
+De varianties van $B_{0}$ en $B_{1}$ zijn afhankelijk van de (constant veronderstelde) variantie van de foutterm. Aangezien $B_{0}$, $B_{1}$ en $Y_{i}$ kansvariabelen zijn, zal $R_{i}=Y_{i}-B_{0}-B_{1}x_{i}$ ook een kansveranderlijke zijn en dus ook de som van de kwadraten ervan (SSE= Sum of Squared Errors):
 \begin{equation}
 SSE=\sum\limits_{i=1}^{i=n}\hat{U_{i}}^{2}=\sum\limits_{i=1}^{i=n}(Y_{i}-B_{0}-B_{1}x_{i})^{2}
 \end{equation}
@@ -340,11 +348,11 @@ sse=\sum\limits_{i=1}^{i=n}\hat{u_{i}}^{2}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b
 
 Een schatter voor de onbekende $\sigma^{2}$ is dus
 \begin{equation}
-s^{2}=\frac{sse}{n-2}=\frac{\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}}{n-2}=\frac{u_{i}^{2}}{n-2}
+s^{2}=\frac{sse}{n-2}=\frac{\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}}{n-2}=\frac{r_{i}^{2}}{n-2}
 \end{equation}
 
 <<echo=FALSE>>=
-sse <- sum(geg$uhat^2)
+sse <- sum(geg$r^2)
 s_sq <- sse/(n-2)
 s <- sqrt(s_sq)
 @
@@ -538,34 +546,16 @@ broom::glance(lineair_model)
 \subsection{Controle van de veronderstellingen}
 
 \newthought{Veronderstelling 1}: $E(U_{i})=0$
-Behalve wanneer er herhalingsmetingen zijn, kennen we geen meerdere waarden voor $y_{i}$, en dus ook geen meerdere waarden voor $u_{i}$. We kunnen dus niet nagaan of $E(U_{i})=0$.  Maar indien we ervan uitgaan (Veronderstelling 5) dat alle $U_{i} \sim N(0,\sigma)$ dan heeft de verzameling van alle waarden van $U_{i}$ (de verzameling van $U$) een gemengde kansverdeling die opgebouwd wordt uit de kansverdelingen van de deelverzamelingen\sidenote{zie Mixture distribution}:
-\begin{equation}
-  \begin{split}
-  f(x)&=\sum\limits_{i=1}^{i=n}w_{i}p_{i}(x) \\
-  F(x)&=\sum\limits_{i=1}^{i=n}w_{i}P_{i}(x)
-  \end{split}
-\end{equation}
-
-waarbij $f(x)$ de kansdensiteitsfunctie is van het totaal en $p_{i}(x)$ de kansdensiteitsfunctie is van deelverzameling i. De hoofdletters staan voor de cumulatieve kansfuncties. De wegingsfactoren $w_{i}$ zullen in dit geval constant zijn en gelijk aan $\frac{1}{n}$ omdat we voor elke van de n x-waarden slechts \'e\'en waarde voor $u_{i}$ hebben. De kansdichtheidsfunctie van $U$ is dus gelijk aan:
-\begin{equation}
-f(x)=\sum\limits_{i=1}^{i=n}\frac{1}{n}N(0,\sigma)(x)=N(0,\sigma)
-\end{equation}
-
-De controle of $E(U_{i})=0$ komt dus neer op de controle $E(U)=0$. Dat kunnen we vinden in de samenvatting van het model (''summary") kijken: daar vinden we een analyse van de fouten (residuals) met waarden voor het minimum, Q1, mean, Q3 en het maximum.
-<<>>=
-summary(lineair_model)
-@
-
-We zien dat de gemiddelde waarde inderdaad gelijk is aan nul, maar bij een lineair verband en gebruik van de kleinste kwadraten methode is dit gegarandeerd. \underline{Samenvatting}: hier valt niet te veel te controleren. 
+Behalve wanneer er herhalingsmetingen zijn, kennen we geen meerdere waarden voor $y_{i}$, en dus ook geen meerdere waarden voor $r_{i}$. We kunnen dus niet nagaan of $E(U_{i})=0$.  
 
 \newthought{Veronderstelling 2}: $E(Y)=\beta_{0}+\beta_{1}x$
 Behalve indien je theo-retische gronden hebt om dit functievoor-schrift voor te stellen (en dan spreken we over een regressie en niet een corelatie), zie ik geen mogelijkheid om dit te controleren. Ik vermoed dat deze aanname meestal puur visueel gebeurt.
 
 \newthought{Veronderstelling 3}: $var(U_{i})=\sigma^{2}=constant$
-Opnieuw kennen we meestal slechts \'e\'en waarde van $u_{i}$ voor elke waarde van $x_{i}$. Als je die als \'e\'en groep beschouwt (alle $u_{i}$ samen) dan kan je daar wel een boxplot of zo van maken, maar daar kan je maar \'e\'en variantie mee associ\"eren. Je kan dus geen evolutie zien. Je kan wel een grafiek maken van $u_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn". Dat zou een indicator kunnen zijn. Je kan als x-as i.p.v. de onafhankelijke variabele $x$ ook de berekende waarde $\hat{y}$ nemen: dat geeft hetzelfde beeld aangezien er een lineair verband is tussen beide. Tenslotte kan men ook i.p.v. met de fouten $u_{i}$ te werken, ook werken met de gestandaardiseerde fouten $\frac{u_{i}}{s}$: dan is het beeld hetzelfde voor elk model en kan je ook direct zien of er fouten zijn die b.v. meer dan 2 standaardafwijkingen groot zijn.
+Opnieuw kennen we meestal slechts \'e\'en waarde van $r_{i}$ voor elke waarde van $x_{i}$. Als je die als \'e\'en groep beschouwt (alle $r_{i}$ samen) dan kan je daar wel een boxplot of zo van maken, maar daar kan je maar \'e\'en variantie mee associ\"eren. Je kan dus geen evolutie zien. Je kan wel een grafiek maken van $u_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn". Dat zou een indicator kunnen zijn. Je kan als x-as i.p.v. de onafhankelijke variabele $x$ ook de berekende waarde $\hat{y}$ nemen: dat geeft hetzelfde beeld aangezien er een lineair verband is tussen beide. Tenslotte kan men ook i.p.v. met de fouten $r_{i}$ te werken, ook werken met de gestandaardiseerde fouten $\frac{r_{i}}{s}$: dan is het beeld hetzelfde voor elk model en kan je ook direct zien of er fouten zijn die b.v. meer dan 2 standaardafwijkingen groot zijn.
 <<label=controle_veronderstelling3,fig=TRUE,include=FALSE, echo=FALSE>>=
 p1 <- ggplot(data=geg) +
-  geom_point(aes(x = x, y = uhat)) +
+  geom_point(aes(x = x, y = r)) +
   xlim(0, 6) +
   ylim(-2, 2) +
   labs(title = "Veronderstelling 3", 
@@ -574,7 +564,7 @@ p1 <- ggplot(data=geg) +
        y = "fout u") +
   JT.theme
 p2 <- ggplot(data=geg) +
-  geom_point(aes(x = yhat, y = uhat)) +
+  geom_point(aes(x = yhat, y = r)) +
   xlim(0, 6) +
   ylim(-2, 2) +
   labs(title = "Veronderstelling 3", 
@@ -582,9 +572,9 @@ p2 <- ggplot(data=geg) +
        x = "berekende waarde van y", 
        y = "fout u") +
   JT.theme
-geg$u_stand <- geg$uhat/s
+geg$r_stand <- geg$r/s
 p3 <- ggplot(data=geg) +
-  geom_point(aes(x = yhat, y = u_stand)) +
+  geom_point(aes(x = yhat, y = r_stand)) +
   xlim(0, 6) +
   ylim(-2, 2) +
   labs(title = "Veronderstelling 3", 
@@ -615,8 +605,8 @@ In dit voorbeeld kunnen we autocorrelatie lag1 uitsluiten.
 Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R.
 
 <<label=controle_veronderstelling5,fig=TRUE,include=FALSE, echo=FALSE>>=
-qqnorm(geg$uhat, main="normaalplot", xlab="theoretische quantielen", ylab="steekproef quantielen")
-qqline(geg$uhat)
+qqnorm(geg$r, main="normaalplot", xlab="theoretische quantielen", ylab="steekproef quantielen")
+qqline(geg$r)
 @
 We zien (Figuur~\ref{fig:controle_veronderstelling5}) dat de gemiddelde waarde van de fouten (Veronderstelling 1) inderdaad nul is. De normaliteit wordt bevestigd door de ligging t.o.v. de ideale lijn.
 \begin{marginfigure}
