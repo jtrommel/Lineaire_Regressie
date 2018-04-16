@@ -333,17 +333,17 @@ De \emph{Gauss-Markov stelling} toont aan dat de schatters voor $\beta_{0}$ $\be
 
 De varianties van $B_{0}$ en $B_{1}$ zijn afhankelijk van de (constant veronderstelde) variantie van de foutterm. Aangezien $B_{0}$, $B_{1}$ en $Y_{i}$ kansvariabelen zijn, zal $R_{i}=Y_{i}-B_{0}-B_{1}x_{i}$ ook een kansveranderlijke zijn en dus ook de som van de kwadraten ervan (SSE= Sum of Squared Errors):
 \begin{equation}
-SSE=\sum\limits_{i=1}^{i=n}\hat{U_{i}}^{2}=\sum\limits_{i=1}^{i=n}(Y_{i}-B_{0}-B_{1}x_{i})^{2}
+SSE=\sum\limits_{i=1}^{i=n}\hat{R_{i}}^{2}=\sum\limits_{i=1}^{i=n}(Y_{i}-B_{0}-B_{1}x_{i})^{2}
 \end{equation}
 
-Het aantal vrijheidsgraden van SSE is (n-2) omdat twee vrijheidsgraden verloren gaan bij de schatting van $B_{0}$ en $B_{1}$. Men kan aantonen dat
+Het aantal vrijheidsgraden van SSE is (n-2) omdat twee vrijheidsgraden verloren gaan omdat we  $B_{0}$ en $B_{1}$ moeten schatten. Men kan aantonen dat
 \begin{equation}
 E(\frac{SSE}{n-2})=E(MSE)=\sigma^{2}
 \end{equation}
 
 Voor \'e\'en bepaald experiment krijgt de kansveranderlijke SSE een concrete waarde nl;
 \begin{equation}
-sse=\sum\limits_{i=1}^{i=n}\hat{u_{i}}^{2}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}
+sse=\sum\limits_{i=1}^{i=n}\hat{r_{i}}^{2}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}
 \end{equation}
 
 Een schatter voor de onbekende $\sigma^{2}$ is dus
