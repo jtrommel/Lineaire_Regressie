@@ -776,7 +776,7 @@ ggplot(data=geg) +
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
-Omdat het teken van de residutermen eigenlijk niet belangrijk is, gebruikt men ook de ''Scale-Location''-plot waarbij men de absolute waarde van de residus $|r_{i}|$ uitzet in functie van de berekende waarde $y_{i}$ (Figuur~\ref{fig:scale_location}). Die waarden zouden op een horizontale lijn moeten liggen (niet de nullijn).
+Omdat het teken van de residutermen eigenlijk niet belangrijk is, gebruikt men ook de ''Scale-Location''-plot waarbij men de wortel van de absolute waarde van de residus $|r_{i}|$ uitzet in functie van de berekende waarde $y_{i}$ (Figuur~\ref{fig:scale_location}). Men neemt de vierkantswortel van de absolute waarden van de residus omdat de scheefheid daarvan kleiner is dan de scheefheid van de absolute waarde op zich. Die waarden zouden op een horizontale lijn moeten liggen (niet de nullijn).
 
 <<label=scale_location,fig=TRUE,include=FALSE, echo=FALSE>>=
 #  lm_abs_stud_res <- lm(abs(student_res) ~ yhat, data=geg)
@@ -832,13 +832,67 @@ ggplot(linmod, aes(quantile1, quantile2)) +
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
+\subsection{Andere elementen om in de gaten te houden}
+\newthought{De invloed} van de meetwaarden die ver gelegen zijn t.o.v. het gemiddelde $\bar{x}$ is groter dan de invloed van punten die naar het midden toe gelegen zijn. Dat hebben we gezien als \emph{leverage}, en een maat hiervoor zijn de waarden op de diagonaal van de ''hat-matrix" $H$. We spreken van een grote leverage wanneer de h-waarde meer dan twee keer het gemiddelde $\bar{h}=\frac{m}{n}$ waarbij $m$ het aantal modelparameters is (hier 2) en $n$ het aantal meetpunten (hier 5). Een voorwaarde is wel dat het aantal meetpunten $n$ voldoende groot moet zijn, wat in dit voorbeeld niet het geval is.
+
+Wanneer we vaststellen dat \'e\'en of meerdere meetpunten een leverage hebben die ''groot" is, dan moeten we nog nagaan of dat hefboomeffect een invloed heeft op het model. Wanneer een meetpunt ver van het gemiddelde gelegen is, maar vrijwel op de regressielijn die bepaald wordt door de andere punten, dan is de invloed van dat meetpunt gering en hoeven we ons geen zorgen te maken dat dit meetpunt het model sterk be\"invloedt. Een maat hiervoor is \emph{Cook's Distance}. De Cook's Distance van meetpunt i wordt gegeven door:
+\begin{equation}
+D_{i}=\frac{\sum\limits_{j=1}^{j=n}\left( \hat{y}_{j} - \hat{y}_{j(i)} \right)}{mMSE}
+\end{equation}
+
+Hierin is $\hat{y}_{j}$ de berekende waarde bij $x_{j}$ als alle $n$ meetpunten in rekening worden gebracht, terwijl $\hat{y}_{j(i)}$ de berekende waarde is bij $x_{j}$ als we meetpunt $i$ \emph{niet} in de berekening opnemen. Dat doen we voor alle meetpunten en we nemen de som. Om dit te standaardiseren delen we door het aantal modelparameters $m$ vermenigvuldigd met MSE. Deze statistiek is F(n,n-m) verdeeld. Als de kans dat we deze waarde of hoger vinden groter is dan 50\% dan heeft de betrokken waarneming een grote invloed op het model.
+
+De berekening van Cook's Distance lijkt ingewikkeld omdat men telkens een bijkomend lineair model moet opstellen waarbij de i-de waarneming wordt uitgesloten. Gelukkig kan men dit herleiden tot een eenvoudigere berekening waarbij we enkel de diagonaalelementen van de hat-matrix $H$ nodig hebben:
+\begin{equation}
+D_{i}=\frac{r_{i}^{2}}{mMSE}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)^{2}} \right]
+\end{equation}
+
+<<>>=
+m <- 2
+MSE=sse/(n-2)
+geg$Di <- ((geg$r^2)/(m*MSE))*(geg$hdiag/(1-geg$hdiag)^{2})
+geg$Di
+@
+
+We vinden die ook terug in de resultaten van het lineair model (Figuur~\ref{fig:Cooks_Distance}).
+<<>>=
+linmod$.cooksd
+@
+
+<<label=Cooks_Distance,fig=TRUE,include=FALSE, echo=FALSE>>=
+ggplot(linmod, aes(seq_along(.cooksd), .cooksd)) +
+  geom_bar(stat="identity", position="identity") +
+  xlab("Obs. Number") +
+  ylab("Cook's distance") +
+  ggtitle("Cook's distance") +
+  JT.theme
+@
+
+\begin{marginfigure}
+\includegraphics[width=1\textwidth]{LinReg-Cooks_Distance}
+\caption{ }
+\label{fig:Cooks_Distance}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{marginfigure}
+
+De kans dat we deze Cook's Distances vinden wordt berekend met de $F_{m,(n-m)}$-kansverdeling:
+\begin{equation}
+P[D_{i} of groter]=1-F_{F}(D_{i})=1-pf(D_{i},m,n-m)
+\end{equation}
+
+<<>>=
+geg$kansDi <- 1-pf(geg$Di,m,n-m)
+geg$kansDi
+@
+
+Hier zijn alle punten invloedrijk, maar dat komt omdat het aantal punten $n$ zeer klein is (5).
+
 
 \newpage
+
 \subsection{Samenvatting van alle diagnostische plots (Figuur~\ref{fig:diagnostic_plots})}
 
-<<echo=FALSE>>=
 
-@
 
 <<label=diagnostic_plots,fig=TRUE,include=FALSE, echo=FALSE>>=
 p1 <- ggplot(linmod, aes(.fitted, .resid)) + 
