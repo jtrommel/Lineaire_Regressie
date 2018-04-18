@@ -553,7 +553,53 @@ Behalve indien je theo-retische gronden hebt om dit functievoor-schrift voor te 
 
 \subsection{Veronderstelling 3: $var(U_{i})=\sigma^{2}=constant$}
 \label{subsec:Veronderstelling3}
-De waarden voor $u_{i}$ zijn onbekend omdat $u_{i}=y_{i}-\beta_{0}-\beta_{1}x_{i}$, en $\beta_{0}$ en $\beta_{1}$ niet gekend zijn. We kennen wel de waarden van de residus $r_{i}$, maar meestal slechts \'e\'en waarde $r_{i}$ voor elke waarde van $x_{i}$. We kunnen wel een simulatie maken waarbij we N (1000) steekproeven doen voor n (5) instellingen van de onafhankelijke variabele $x_{i}$. Dan kan je voor elke steekproef een kleinste kwadraten-rechten berekenen en de residus uitrekenen. Voor elke waarde van $x_{i}$ kan je dan de variantie van de residus bepalen.
+De waarden voor $u_{i}$ zijn onbekend omdat $u_{i}=y_{i}-\beta_{0}-\beta_{1}x_{i}$, en $\beta_{0}$ en $\beta_{1}$ niet gekend zijn. We kennen wel de waarden van de residus $r_{i}$, maar meestal slechts \'e\'en waarde $r_{i}$ voor elke waarde van $x_{i}$. We kunnen een grafiek maken van $r_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn(=het gemiddelde van residus en fouten)". Dat zou een indicator kunnen zijn dat $\sigma$ niet constant is. Je kan als x-as i.p.v. de onafhankelijke variabele $x$ ook de berekende waarde $\hat{y}$ nemen: dat geeft hetzelfde beeld aangezien er een lineair verband is tussen beide. Tenslotte kan men ook i.p.v. met de residus $r_{i}$ te werken, gestandaardiseerde residus $\frac{r_{i}}{s}$ gebruiken. Die zijn dimensieloos en onafhankelijk van de aard en grootte van de responsvariabele $y$. De interpretatie van de grafiek is dan onafhankelijk van de concrete situatie: we gaan na of er residus zijn die b.v. meer dan 2 standaardafwijkingen groot zijn.
+<<label=controle_veronderstelling3,fig=TRUE,include=FALSE, echo=FALSE>>=
+p1 <- ggplot(data=geg) +
+  geom_point(aes(x = x, y = r)) +
+  geom_hline(yintercept=0, col="blue", linetype="dashed") +
+  xlim(0, 6) +
+  ylim(-2, 2) +
+  labs(title = "Veronderstelling 3", 
+       subtitle = "Constante variantie",
+       x = "onafhankelijke variabele x", 
+       y = "residu r") +
+  JT.theme
+p2 <- ggplot(data=geg) +
+  geom_point(aes(x = yhat, y = r)) +
+  geom_hline(yintercept=0, col="blue", linetype="dashed") +
+  xlim(0, 6) +
+  ylim(-2, 2) +
+  labs(title = "Veronderstelling 3", 
+       subtitle = "Constante variantie",
+       x = "berekende waarde van y", 
+       y = "residu r") +
+  JT.theme
+geg$r_stand <- geg$r/s
+p3 <- ggplot(data=geg) +
+  geom_point(aes(x = yhat, y = r_stand)) +
+  geom_hline(yintercept=0, col="blue", linetype="dashed") +
+  geom_hline(yintercept=-2, col="red") +
+  geom_hline(yintercept=2, col="red") +
+  xlim(0, 6) +
+  ylim(-3, 3) +
+  labs(title = "Veronderstelling 3", 
+       subtitle = "Constante variantie",
+       x = "berekende waarde van y", 
+       y = "gestandaardiseerde residu r") +
+  JT.theme
+grid.arrange(p1, p2, p3, ncol=3)
+@
+
+\begin{figure}
+\centering
+\includegraphics[height=7cm]{LinReg-controle_veronderstelling3}
+\caption{ }
+\label{fig:controle_veronderstelling3}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{figure}
+
+\newthought{Maar hier zit een adder onder het gras} nl. de intu\"itieve veronderstelling dat de variantie van de residus $r_{i}$ constant is en gelijk aan $\sigma^{2}$. Dat dit niet zo is blijkt uit volgende simulatie waarbij we N (1000) steekproeven doen voor n (5) instellingen van de onafhankelijke variabele $x_{i}$. Voor elke steekproef worden de kleinste kwadraten-rechten berekenen en de residus. Voor elke waarde van $x_{i}$ kan je dan de variantie van de residus bepalen.
 
 <<echo=FALSE>>=
 Nsim <- 100
@@ -578,16 +624,16 @@ simul1$resid <- simul1$y - simul1$yhat
 simul1 %>% group_by(x) %>% summarise(variantie=var(resid))
 @
 
-Wat opvalt is dat de variantie van de residus \emph{kleiner} is aan de uiteinden dan in het midden! Dit komt omdat de meetpunten aan de uiteinden een grotere invloed (\emph{leverage}) hebben bij het bepalen van $b_{0}$ en $b_{1}$. Hierdoor ligt de rechte $b_{0}+b_{1}x$ dichter bij de meetwaarden $y$ aan de uiteinden, waardoor ook het residu daar kleiner wordt. De variantie van de residus $r_{i}$ is dus niet enkel afhankelijk van $\sigma$ maar ook van de invloed (\emph{leverage}) dat punt ($x_{i}, y_{i}$) heeft. De meer extreme punten zijn diegene waarvoor $(x_{i}-\bar{x})$ groot is. Die \emph{leverage} kunnen we halen uit de \emph{hat-matrix H}.
+Wat opvalt is dat de variantie van de residus \emph{kleiner} is aan de uiteinden dan in het midden! Dit komt omdat de meetpunten aan de uiteinden een grotere invloed (\emph{leverage}) hebben bij het bepalen van $b_{0}$ en $b_{1}$. Hierdoor ligt de rechte $b_{0}+b_{1}x$ dichter bij de meetwaarden $y_{i}$ aan de uiteinden, waardoor ook het residu daar kleiner wordt. De variantie van de residus $r_{i}$ is dus niet enkel afhankelijk van $\sigma$ maar ook van de invloed (\emph{leverage}) dat punt ($x_{i}, y_{i}$) heeft op de berekening van de parameters van de rechte. De meer extreme punten zijn diegene waarvoor $(x_{i}-\bar{x})$ groot is. De \emph{leverage} kunnen we halen uit de \emph{hat-matrix H}.
 
-\newthought{De hat-matrix H} komt naar voor als we een matrixnotatie gebruiken voor de residus. Dat maakt uitbreiding naar lineaire modellen in m\'e\'er dan \'e\'en onafhankelijke variabele zeer gemakkelijk. In formulevorm zijn de residus gegeven door:
+\newthought{De hat-matrix H} komt naar voor als we een matrixnotatie gebruiken voor de residus. Dat maakt uitbreiding naar lineaire modellen met m\'e\'er dan \'e\'en onafhankelijke variabele zeer gemakkelijk. In formulevorm zijn de residus gegeven door:
 \begin{equation}
 r_{i}=y_{i}-\hat{y}_{i}=y_{i}-b_{0}-b_{1}x_{i} \quad i=1 \ldots n
 \end{equation}
 
 Je kan dat in matrixvorm schrijven als:
 \begin{equation}
-\boldsymbol{r}=\boldsymbol{Y}-\boldsymbol{\hat{Y}}=\boldsymbol{Y}-\boldsymbol{X}*\boldsymbol{b}
+\boldsymbol{r}=\boldsymbol{Y}-\boldsymbol{\hat{Y}}=\boldsymbol{Y}-\boldsymbol{X}\boldsymbol{b}
 \end{equation}
 
 met
@@ -635,35 +681,35 @@ b_{1}
 \end{bmatrix}
 \end{equation}
 
-Je kan bewijzen\sidenote{Goos, pp. 34} dat als$\boldsymbol{X'}*\boldsymbol{X}$ inverteerbaar is, dat
+Je kan bewijzen\sidenote{Goos, pp. 34} dat als $\boldsymbol{X'}\boldsymbol{X}$ inverteerbaar is, dat
 \begin{equation}
-\boldsymbol{b}=\left( \boldsymbol{X'}*\boldsymbol{X} \right)^{-1}*\boldsymbol{X'}*\boldsymbol{Y}
+  \boldsymbol{b}=\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'}\boldsymbol{Y}
 \end{equation}
 
 zodat
 \begin{equation}
-\boldsymbol{r}=\boldsymbol{Y}-\boldsymbol{X}*\boldsymbol{b}=\boldsymbol{Y}-\boldsymbol{X}*\left( \boldsymbol{X'}*\boldsymbol{X} \right)^{-1}*\boldsymbol{X'}*\boldsymbol{Y}=\left[ \boldsymbol{I} - \boldsymbol{X}*\left( \boldsymbol{X'}*\boldsymbol{X} \right)^{-1}*\boldsymbol{X'} \right]*\boldsymbol{Y}
+\boldsymbol{r}=\boldsymbol{Y}-\boldsymbol{X}\boldsymbol{b}=\boldsymbol{Y}-\boldsymbol{X}\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'}\boldsymbol{Y}=\left[ \boldsymbol{I} - \boldsymbol{X}\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'} \right]\boldsymbol{Y}
 \end{equation}
 We stellen
 \begin{equation}
-\boldsymbol{H}=\boldsymbol{X}*\left( \boldsymbol{X'}*\boldsymbol{X} \right)^{-1}*\boldsymbol{X'}
+\boldsymbol{H}=\boldsymbol{X}\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'}
 \end{equation}
 
 zodat
 \begin{equation}
-\boldsymbol{r}=\left[ \boldsymbol{I} - \boldsymbol{H} \right]*\boldsymbol{Y}
+  \begin{split}
+  \boldsymbol{r}&=\left[ \boldsymbol{I} - \boldsymbol{H} \right]\boldsymbol{Y} \\
+  en \\
+  \boldsymbol{\hat{Y}}&=\boldsymbol{H}\boldsymbol{Y}
+  \end{split}
 \end{equation}
 
-Uit
+Hieruit volgt dat, bij voorbeeld, de tweede berekende waarde $\hat{y}_{2}$ gelijk zal zijn aan
 \begin{equation}
-\boldsymbol{\hat{Y}}=\boldsymbol{H}*\boldsymbol{Y}
-\end{equation}
-volgt dat bij voorbeeld de tweede berekende waarde $\hat{y}_{2}$ gelijk zal zijn aan
-\begin{equation}
-\hat{y}_{2}=h_{2,1}*y_{1}+h_{2,2}*y_{2}+h_{2,3}*y_{3}+h_{2,4}*y_{4}+h_{2,5}*y_{5}
+\hat{y}_{2}=h_{2,1}y_{1}+h_{2,2}y_{2}+h_{2,3}y_{3}+h_{2,4}y_{4}+h_{2,5}y_{5}
 \end{equation}
 
-$h_{2,2}$ zal dus bepalend zijn voor de mate waarin het meetpunt $y_{2}$ de berekende waarde $\hat{y}_{2}$ zal be\"invloeden. Dit noemen we de \emph{leverage} of de \emph{hefboomwerking}. De som van alle hefboomwaarden is altijd gelijk aan \emph{het aantal modelparameters}. Bij een enkelvoudige regressie zijn dat er twee: $b_{0}$ en $b_{1}$.
+$h_{2,2}$ zal dus bepalend zijn voor de mate waarin het meetpunt $y_{2}$ de berekende waarde $\hat{y}_{2}$ zal be\"invloeden. Dit noemen we de \emph{leverage} of de \emph{hefboomwerking}. De som van alle hefboomwaarden is altijd gelijk aan \emph{het aantal modelparameters m}. Bij een enkelvoudige regressie zijn dat er twee: $b_{0}$ en $b_{1}$.
 <<echo=FALSE>>=
 X <- matrix(c(rep(1,n),geg$x), ncol=2)
 H <- X%*%solve(t(X)%*%X)%*%t(X)
@@ -673,17 +719,17 @@ H <- X%*%solve(t(X)%*%X)%*%t(X)
 sum(diag(H))
 @
 
-Indien elke waarneming hetzelfde belang zou hebben dan zouden de diagonaalwaarden overal gelijk moeten zijn aan het aantal modelparameters gedeeld door $n$. In dit geval is dat \Sexpr{round(sum(diag(H))/n,3)}. Wanneer we de matrix $\boldsymbol{H}$ bekijken dat is dat niet het geval: \emph{de eindpunten hebben een hoger dan gemiddelde hefboom}.
+Indien elke waarneming hetzelfde belang zou hebben dan zouden de diagonaalwaarden overal gelijk moeten zijn aan het aantal modelparameters gedeeld door $n$. In dit geval is dat \Sexpr{round(sum(diag(H))/n,3)}. Wanneer we de matrix $\boldsymbol{H}$ bekijken dat is dat niet het geval: \emph{de eindpunten} hebben een hoger dan gemiddelde hefboom, \emph{de middelpunten} hebben een lager dan gemiddelde hefboom.
 
 <<>>=
 H
 @
 
-De variantie van de residus wordt ook bepaald door de hefboomwaarden:
+De variantie van de residus wordt dus ook bepaald door de hefboomwaarden:
 \begin{equation}
 var(r_{i})=\sigma^{2}\left( 1-h_{i,i} \right)
 \end{equation}
-en we zien dus dat de variantie aan de uiteinden wat lager is. Om de residus met elkaar te vergelijken gaan we ze standaardiseren door het gemiddelde (0) af te trekken, en te delen door de standaardafwijking. Dat noemen we de \emph{studentized} residus:
+en we zien dus dat de variantie aan de uiteinden wat lager is. Om residus op een correcte manier met elkaar te vergelijken gaan we ze standaardiseren door het gemiddelde (0) af te trekken, en te delen door de juiste standaardafwijking. Dat noemen we de \emph{studentized} residus, omdat zij kansvariabelen zijn die T(n-1-m) verdeeld zijn.
 \begin{equation}
 stdres_{i}=\frac{r_{i}}{\sqrt(\sigma^{2}\left(1-h_{i,i} \right))}
 \end{equation}
@@ -692,45 +738,44 @@ $\sigma^{2}$ is niet bekend maar wordt geschat door $MSE=\frac{SSE}{(n-2)}$ zoda
 \begin{equation}
 stdres_{i}=\frac{r_{i}}{\sqrt(MSE\left(1-h_{i,i} \right))}
 \end{equation}
-Je kan wel een grafiek maken van $u_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn". Dat zou een indicator kunnen zijn. Je kan als x-as i.p.v. de onafhankelijke variabele $x$ ook de berekende waarde $\hat{y}$ nemen: dat geeft hetzelfde beeld aangezien er een lineair verband is tussen beide. Tenslotte kan men ook i.p.v. met de fouten $r_{i}$ te werken, ook werken met de gestandaardiseerde fouten $\frac{r_{i}}{s}$: dan is het beeld hetzelfde voor elk model en kan je ook direct zien of er fouten zijn die b.v. meer dan 2 standaardafwijkingen groot zijn.
-<<label=controle_veronderstelling3,fig=TRUE,include=FALSE, echo=FALSE>>=
-p1 <- ggplot(data=geg) +
-  geom_point(aes(x = x, y = r)) +
-  xlim(0, 6) +
-  ylim(-2, 2) +
-  labs(title = "Veronderstelling 3", 
-       subtitle = "Constante variantie",
-       x = "onafhankelijke variabele x", 
-       y = "fout u") +
-  JT.theme
-p2 <- ggplot(data=geg) +
-  geom_point(aes(x = yhat, y = r)) +
-  xlim(0, 6) +
-  ylim(-2, 2) +
-  labs(title = "Veronderstelling 3", 
-       subtitle = "Constante variantie",
-       x = "berekende waarde van y", 
-       y = "fout u") +
-  JT.theme
-geg$r_stand <- geg$r/s
-p3 <- ggplot(data=geg) +
-  geom_point(aes(x = yhat, y = r_stand)) +
-  xlim(0, 6) +
-  ylim(-2, 2) +
-  labs(title = "Veronderstelling 3", 
-       subtitle = "Constante variantie",
-       x = "berekende waarde van y", 
-       y = "gestandaardiseerde fout u") +
-  JT.theme
-grid.arrange(p1, p2, p3, ncol=3)
+
+In dit voorbeeld zijn de studentized residus dus:
+<<>>=
+geg$hdiag <- diag(H)
+geg$student_res <- geg$r/sqrt((sse/(n-2))*(1-geg$hdiag))
+geg$student_res
 @
 
-\begin{figure}
-\includegraphics[width=1\textwidth]{LinReg-controle_veronderstelling3}
+Deze waarden zijn direct beschikbaar in het lineaire model. Met het ''broom"-package maken we die beschikbaar in een data.frame:
+<<>>=
+linmod$.std.resid
+@
+
+De relevante grafiek wordt dus het verband tussen de studentized residus i.f.v. de onafhankelijke variabele $x_{i}$ of de berekende waarde $\hat{y}_{i}$ (Figuur~\ref{fig:studentized_resid}).
+
+<<label=studentized_resid,fig=TRUE,include=FALSE, echo=FALSE>>=
+ggplot(data=geg) +
+  geom_point(aes(x = yhat, y = student_res)) +
+  geom_hline(yintercept=0, col="blue", linetype="dashed") +
+  geom_hline(yintercept=-2, col="red") +
+  geom_hline(yintercept=2, col="red") +
+  xlim(0, 6) +
+  ylim(-3, 3) +
+  labs(title = "Veronderstelling 3", 
+       subtitle = "Constante variantie",
+       x = "berekende waarde van y", 
+       y = "studentized residu r") +
+  JT.theme
+@
+
+\begin{marginfigure}[-2cm]
+\centering
+\includegraphics[width=1\textwidth]{LinReg-studentized_resid}
 \caption{ }
-\label{fig:controle_veronderstelling3}
+\label{fig:studentized_resid}
 \setfloatalignment{b}% forces caption to be bottom-aligned
-\end{figure}
+\end{marginfigure}
+
 
 \subsection{Veronderstelling 4: $cov(U_{i},U_{j})=0$ voor $i \neq j$}
 Tricky! Als er onderlinge afhankelijkheid is, dan is het meestal via een derde element, bij voorbeeld \'e\'en van de onafhankelijke variabelen. In dit geval is er maar \'e\'en onafhankelijke variabele en vallen we terug op Figuur~\ref{fig:controle_veronderstelling3}. Daar kunnen we eventueel zien of er een verband is tussen $u_{i}$ en $x_{i}$. Een anders situatie is autocorrelatie waarbij de huidige term afhankelijk is van de vorige. Dat komt veel voor bij tijdsreeksen. Daar is het dus het type van de data (tijdsreeks) dat doet twijfelen aan Veronderstelling 4. De Durbin-Watson test (in het ''car"-package) gaat na of er een lag1-autocorrelatie en, voor die situatie, kunnen we dit nagaan voor de fouttermen:
@@ -742,13 +787,20 @@ durbinWatsonTest(lineair_model)
 In dit voorbeeld kunnen we autocorrelatie lag1 uitsluiten.
 
 \subsection{Veronderstelling 5: $U \sim N(0,\sigma)$}
-Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R.
+Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R. Opgeschoond met ggplot geeft dit Figuur~\ref{fig:controle_veronderstelling5}. We zien dat de gemiddelde waarde van de residus (Veronderstelling 1) inderdaad nul is. De normaliteit wordt bevestigd door de ligging t.o.v. de ideale lijn.
 
 <<label=controle_veronderstelling5,fig=TRUE,include=FALSE, echo=FALSE>>=
-qqnorm(geg$r, main="normaalplot", xlab="theoretische quantielen", ylab="steekproef quantielen")
-qqline(geg$r)
+quantile1 <- qqnorm(linmod$.std.resid, plot.it = FALSE)[[1]]
+quantile2 <- qqnorm(linmod$.std.resid, plot.it = FALSE)[[2]]
+ggplot(linmod, aes(quantile1, quantile2)) +
+  geom_point(na.rm = TRUE) +
+  geom_line(aes(quantile2, quantile2), col="red", linetype="dashed") +
+  xlab("Theor. Gestandaard. Quantielen") +
+  ylab("Waarg. Gestandaard. Quantielen") +
+  ggtitle("Normplot gestandaardiseerde residus") +
+  JT.theme
 @
-We zien (Figuur~\ref{fig:controle_veronderstelling5}) dat de gemiddelde waarde van de fouten (Veronderstelling 1) inderdaad nul is. De normaliteit wordt bevestigd door de ligging t.o.v. de ideale lijn.
+
 \begin{marginfigure}
 \includegraphics[width=1\textwidth]{LinReg-controle_veronderstelling5}
 \caption{ }
@@ -756,12 +808,12 @@ We zien (Figuur~\ref{fig:controle_veronderstelling5}) dat de gemiddelde waarde v
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
+
 \newpage
 \subsection{Samenvatting van alle diagnostische plots (Figuur~\ref{fig:diagnostic_plots})}
 
 <<echo=FALSE>>=
-quantile1 <- qqnorm(linmod$.std.resid)[[1]]
-quantile2 <- qqnorm(linmod$.std.resid)[[2]]
+
 @
 
 <<label=diagnostic_plots,fig=TRUE,include=FALSE, echo=FALSE>>=
