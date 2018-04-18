@@ -568,7 +568,7 @@ p1 <- ggplot(data=geg) +
 p2 <- ggplot(data=geg) +
   geom_point(aes(x = yhat, y = r)) +
   geom_hline(yintercept=0, col="blue", linetype="dashed") +
-  xlim(0, 6) +
+  xlim(0, 5) +
   ylim(-2, 2) +
   labs(title = "Veronderstelling 3", 
        subtitle = "Constante variantie",
@@ -581,7 +581,7 @@ p3 <- ggplot(data=geg) +
   geom_hline(yintercept=0, col="blue", linetype="dashed") +
   geom_hline(yintercept=-2, col="red") +
   geom_hline(yintercept=2, col="red") +
-  xlim(0, 6) +
+  xlim(0, 5) +
   ylim(-3, 3) +
   labs(title = "Veronderstelling 3", 
        subtitle = "Constante variantie",
@@ -731,12 +731,12 @@ var(r_{i})=\sigma^{2}\left( 1-h_{i,i} \right)
 \end{equation}
 en we zien dus dat de variantie aan de uiteinden wat lager is. Om residus op een correcte manier met elkaar te vergelijken gaan we ze standaardiseren door het gemiddelde (0) af te trekken, en te delen door de juiste standaardafwijking. Dat noemen we de \emph{studentized} residus, omdat zij kansvariabelen zijn die T(n-1-m) verdeeld zijn.
 \begin{equation}
-stdres_{i}=\frac{r_{i}}{\sqrt(\sigma^{2}\left(1-h_{i,i} \right))}
+stdres_{i}=\frac{r_{i}}{\sqrt{\sigma^{2}\left(1-h_{i,i} \right)}}
 \end{equation}
 
 $\sigma^{2}$ is niet bekend maar wordt geschat door $MSE=\frac{SSE}{(n-2)}$ zodat
 \begin{equation}
-stdres_{i}=\frac{r_{i}}{\sqrt(MSE\left(1-h_{i,i} \right))}
+stdres_{i}=\frac{r_{i}}{\sqrt{MSE\left(1-h_{i,i} \right)}}
 \end{equation}
 
 In dit voorbeeld zijn de studentized residus dus:
@@ -751,15 +751,15 @@ Deze waarden zijn direct beschikbaar in het lineaire model. Met het ''broom"-pac
 linmod$.std.resid
 @
 
-De relevante grafiek wordt dus het verband tussen de studentized residus i.f.v. de onafhankelijke variabele $x_{i}$ of de berekende waarde $\hat{y}_{i}$ (Figuur~\ref{fig:studentized_resid}).
+De relevante grafiek wordt dus het verband tussen de studentized residus i.f.v. de onafhankelijke variabele $x_{i}$ of de berekende waarde $\hat{y}_{i}$ (Figuur~\ref{fig:studentized_resid}). 
 
 <<label=studentized_resid,fig=TRUE,include=FALSE, echo=FALSE>>=
 ggplot(data=geg) +
   geom_point(aes(x = yhat, y = student_res)) +
-  geom_hline(yintercept=0, col="blue", linetype="dashed") +
-  geom_hline(yintercept=-2, col="red") +
-  geom_hline(yintercept=2, col="red") +
-  xlim(0, 6) +
+  geom_hline(yintercept=0, col="blue") +
+  geom_hline(yintercept=-2, col="red", linetype="dashed") +
+  geom_hline(yintercept=2, col="red", linetype="dashed") +
+  xlim(0, 5) +
   ylim(-3, 3) +
   labs(title = "Veronderstelling 3", 
        subtitle = "Constante variantie",
@@ -776,7 +776,31 @@ ggplot(data=geg) +
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
+Omdat het teken van de residutermen eigenlijk niet belangrijk is, gebruikt men ook de ''Scale-Location''-plot waarbij men de absolute waarde van de residus $|r_{i}|$ uitzet in functie van de berekende waarde $y_{i}$ (Figuur~\ref{fig:scale_location}). Die waarden zouden op een horizontale lijn moeten liggen (niet de nullijn).
 
+<<label=scale_location,fig=TRUE,include=FALSE, echo=FALSE>>=
+#  lm_abs_stud_res <- lm(abs(student_res) ~ yhat, data=geg)
+ggplot(data=geg, aes(x = yhat, y = sqrt(abs(student_res)))) +
+  geom_point() +
+  geom_smooth(col="red") +
+  xlim(0, 5) +
+  ylim(-1, 3) +
+  geom_hline(yintercept=0, col="blue") +
+  labs(title = "Scale-Location", 
+       x = "berekende waarde van y", 
+       y = expression(sqrt(abs("studentized residu r")))) +
+  JT.theme
+@
+
+\begin{marginfigure}[0cm]
+\centering
+\includegraphics[width=1\textwidth]{LinReg-scale_location}
+\caption{ }
+\label{fig:scale_location}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{marginfigure}
+
+\newpage
 \subsection{Veronderstelling 4: $cov(U_{i},U_{j})=0$ voor $i \neq j$}
 Tricky! Als er onderlinge afhankelijkheid is, dan is het meestal via een derde element, bij voorbeeld \'e\'en van de onafhankelijke variabelen. In dit geval is er maar \'e\'en onafhankelijke variabele en vallen we terug op Figuur~\ref{fig:controle_veronderstelling3}. Daar kunnen we eventueel zien of er een verband is tussen $u_{i}$ en $x_{i}$. Een anders situatie is autocorrelatie waarbij de huidige term afhankelijk is van de vorige. Dat komt veel voor bij tijdsreeksen. Daar is het dus het type van de data (tijdsreeks) dat doet twijfelen aan Veronderstelling 4. De Durbin-Watson test (in het ''car"-package) gaat na of er een lag1-autocorrelatie en, voor die situatie, kunnen we dit nagaan voor de fouttermen:
 
@@ -795,9 +819,9 @@ quantile2 <- qqnorm(linmod$.std.resid, plot.it = FALSE)[[2]]
 ggplot(linmod, aes(quantile1, quantile2)) +
   geom_point(na.rm = TRUE) +
   geom_line(aes(quantile2, quantile2), col="red", linetype="dashed") +
-  xlab("Theor. Gestandaard. Quantielen") +
-  ylab("Waarg. Gestandaard. Quantielen") +
-  ggtitle("Normplot gestandaardiseerde residus") +
+  xlab("Theor. Studentized Quantielen") +
+  ylab("Waarg. Studentized Quantielen") +
+  ggtitle("Normplot studentized residus") +
   JT.theme
 @
 
@@ -828,15 +852,15 @@ p1 <- ggplot(linmod, aes(.fitted, .resid)) +
 p2 <- ggplot(linmod, aes(quantile1, quantile2)) +
   geom_point(na.rm = TRUE) +
   geom_line(aes(quantile2, quantile2), col="red", linetype="dashed") +
-  xlab("Theor. Gestandaard. Quantielen") +
-  ylab("Waarg. Gestandaard. Quantielen") +
-  ggtitle("Normplot gestandaardiseerde residus") +
+  xlab("Theor. Studentized Quantielen") +
+  ylab("Waarg. Studentized Quantielen") +
+  ggtitle("Normplot studentized residus") +
   JT.theme
 
-p3 <- ggplot(linmod, aes(.fitted, sqrt(abs(.std.resid)))) +
+p3 <- ggplot(linmod, aes(.fitted, abs(.std.resid))) +
   geom_point(na.rm=TRUE) +
   xlab("Berekende waarden") +
-  ylab(expression(sqrt("|Gestandaardiseerde residuals|"))) +
+  ylab("|Gestandaardiseerde residuals|") +
   ggtitle("Scale-Location") +
   JT.theme
     
