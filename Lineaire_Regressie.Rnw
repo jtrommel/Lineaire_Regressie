@@ -754,13 +754,13 @@ linmod$.std.resid
 De relevante grafiek wordt dus het verband tussen de studentized residus i.f.v. de onafhankelijke variabele $x_{i}$ of de berekende waarde $\hat{y}_{i}$ (Figuur~\ref{fig:studentized_resid}). 
 
 <<label=studentized_resid,fig=TRUE,include=FALSE, echo=FALSE>>=
-xmin <- min(linmod$.fitted) - 0.1*(abs(min(linmod$.fitted)))
-xmax <- max(linmod$.fitted) + 0.1*(abs(max(linmod$.fitted)))
-ymin <- min(c(-3,min(linmod$.std.resid) - 0.1*(abs(min(linmod$.std.resid)))))
-ymax <- max(c(3,max(linmod$.std.resid) + 0.1*(abs(max(linmod$.std.resid)))))
+xmin <- min(linmod$.fitted) - 0.2*(abs(min(linmod$.fitted)))
+xmax <- max(linmod$.fitted) + 0.2*(abs(max(linmod$.fitted)))
+ymin <- min(c(-3,min(linmod$.std.resid) - 0.2*(abs(min(linmod$.std.resid)))))
+ymax <- max(c(3,max(linmod$.std.resid) + 0.2*(abs(max(linmod$.std.resid)))))
 p1 <- ggplot(data=linmod, aes(x = .fitted, y = .std.resid)) +
   geom_point() +
-  geom_label(label=rownames(linmod), nudge_x = 0.3, nudge_y = 0.1, size=2.5) +
+  geom_label(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.fitted))), nudge_y = 0, size=2.5) +
   geom_hline(yintercept=0, col="blue") +
   geom_hline(yintercept=-2, col="red", linetype="dashed") +
   geom_hline(yintercept=2, col="red", linetype="dashed") +
@@ -768,8 +768,8 @@ p1 <- ggplot(data=linmod, aes(x = .fitted, y = .std.resid)) +
   ylim(ymin, ymax) +
   labs(title = "Veronderstelling 3", 
        subtitle = "Constante variantie",
-       x = "berekende waarde van y", 
-       y = "studentized residu r") +
+       x = "Berekende waarde van y", 
+       y = "Studentized Residu r") +
   JT.theme
 p1
 @
@@ -786,11 +786,11 @@ Omdat het teken van de residutermen eigenlijk niet belangrijk is, gebruikt men o
 
 <<label=scale_location,fig=TRUE,include=FALSE, echo=FALSE>>=
 #  lm_abs_stud_res <- lm(abs(student_res) ~ yhat, data=geg)
-ymin <- -0.1*max(sqrt(abs(linmod$.std.resid))) 
-ymax <- 1.1*max(sqrt(abs(linmod$.std.resid))) 
+ymin <- -0.2*max(sqrt(abs(linmod$.std.resid))) 
+ymax <- 1.2*max(sqrt(abs(linmod$.std.resid))) 
 p3 <- ggplot(data=linmod, aes(x = .fitted, y = sqrt(abs(.std.resid)))) +
   geom_point() +
-  geom_label(label=rownames(linmod), nudge_x = 0, nudge_y = 0.75*abs(ymin), size=2.5) +
+  geom_label(label=rownames(linmod), nudge_x = 0, nudge_y = 0.1*max(sqrt(abs(linmod$.std.resid))), size=2.5) +
   xlim(xmin, xmax) +
   ylim(ymin, ymax) +
   geom_hline(yintercept=0, col="blue") +
@@ -823,17 +823,16 @@ Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R. Opgeschoond met gg
 
 <<label=controle_veronderstelling5,fig=TRUE,include=FALSE, echo=FALSE>>=
 kwantiel <- data.frame(q1=qqnorm(linmod$.std.resid, plot.it = FALSE)[[1]], q2=qqnorm(linmod$.std.resid, plot.it = FALSE)[[2]])
-xmin <- min(kwantiel$q1) - 0.1*(abs(min(kwantiel$q1)))
-xmax <- max(kwantiel$q1) + 0.1*(abs(max(kwantiel$q1)))
-ymin <- min(kwantiel$q2) - 0.1*(abs(min(kwantiel$q2)))
-ymax <- max(kwantiel$q2) + 0.1*(abs(max(kwantiel$q2)))
+xmin <- min(kwantiel$q1) - 0.2*(abs(min(kwantiel$q1)))
+xmax <- max(kwantiel$q1) + 0.2*(abs(max(kwantiel$q1)))
+ymin <- min(kwantiel$q2) - 0.2*(abs(min(kwantiel$q2)))
+ymax <- max(kwantiel$q2) + 0.2*(abs(max(kwantiel$q2)))
 p2 <- ggplot(kwantiel, aes(q1, q2)) +
-  geom_point(na.rm = TRUE) +
-  geom_label(label=rownames(kwantiel), nudge_x = 0, nudge_y = 0.1*(abs(max(kwantiel$q2))), size=2.5) +
-  geom_line(aes(x=q2, y=q2)) +
-  # geom_line(aes(q2, q2), col="red", linetype="dashed") +
-  xlim(xmin, xmax) +
-  ylim(ymin, ymax) +
+  geom_point(na.rm = TRUE, size=1) +
+  geom_label(label=rownames(kwantiel), nudge_x = 0.1*(abs(max(kwantiel$q2))), nudge_y = 0, size=2.5) +
+  geom_line(aes(x=q2, y=q2), linetype="dashed") +
+  xlim(min(xmin,ymin), max(xmax,ymax)) +
+  ylim(min(xmin,ymin), max(xmax,ymax)) +
   xlab("Theor. Studentized Quantielen") +
   ylab("Waarg. Studentized Quantielen") +
   ggtitle("Normplot studentized residus") +
@@ -912,19 +911,29 @@ D_{i}=\frac{r_{i}^{2}}{mMSE}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)^{2}} 
 geeft duidelijk aan wanneer een meetpunt invloedrijk is, en dus de moeite om grondig te bekijken (niet om het te verwijderen!). De invloed van meetpunt $i$ is groot wanneer het residu $r_{i}$ groot is en/of de leverage $h_{ii}$ groot is. Een punt dat ver gelegen is van het zwaartepunt $(\bar{x},\bar{y})$ heeft een grote hefboom t.o.v. het draaipunt $(\bar{x},\bar{y})$ en kan daardoor de regressierechte meer verdraaien door haar invloed op $b_{0}$ en $b_{1}$. Maar indien dat meetpunt gelegen is op of in de buurt van de regressielijn (klein residu $r_{i}$) dan zal de invloed (Cook's Distance) toch klein zijn. Analoog zal een meetpunt dat dicht bij het zwaartepunt ligt toch een grote invloed kunnen hebben op de ligging van de regressielijn wanneer het ver van die lijn (die in grote mate door de (n-1) andere meetpunten wordt bepaald) en dus een groot residu $r_{i}$ heeft. Het is dus zinvol om die twee effecten (residu en leverage) uit elkaar te halen. Dat kan door het residu (studentized) uit te zetten i.f.v. de leverage (Figuur~\ref{fig:Cooks_explained} links) of de Cook's Distance i.f.v. de breuk $\frac{h_{ii}}{(1-h_{ii})}$ (Figuur~\ref{fig:Cooks_explained} rechts).
 
 <<label=Cooks_explained,fig=TRUE,include=FALSE, echo=FALSE>>=
+xmin <- min(linmod$.hat) - 0.2*(abs(min(linmod$.hat)))
+xmax <- max(linmod$.hat) + 0.2*(abs(max(linmod$.hat)))
+ymin <- min(c(-3,min(linmod$.std.resid) - 0.2*(abs(min(linmod$.std.resid)))))
+ymax <- max(c(3,max(linmod$.std.resid) + 0.2*(abs(max(linmod$.std.resid)))))
 p5 <- ggplot(linmod, aes(.hat, .std.resid)) +
   geom_point(aes(size=.cooksd), na.rm=TRUE) +
-  geom_label(label=rownames(linmod), nudge_x = 0.03, nudge_y = 0.01, size=2.5) +
+  geom_label(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat))), nudge_y = 0, size=2.5) +
+  xlim(xmin,xmax) +
+  ylim(ymin,ymax) +
   xlab("Leverage hii") +
   ylab("Studentized Residus") +
   ggtitle("Invloedrijke meetpunten", subtitle="Residu ri i.f.v. leverage hii") +
   scale_size_continuous("Cook's Distance", range=c(1,5)) +
   JT.theme +
   theme(legend.position="right", legend.title=element_text(size=7) ,legend.text=element_text(size=5))
-    
+
+xmin <- min(linmod$.hat/(1-linmod$.hat)) - 0.2*(abs(min(linmod$.hat/(1-linmod$.hat))))
+xmax <- max(linmod$.hat/(1-linmod$.hat)) + 0.2*(abs(max(linmod$.hat/(1-linmod$.hat))))
+ymin <- min(linmod$.cooksd) - 0.2*(abs(min(linmod$.cooksd)))
+ymax <- max(linmod$.cooksd) + 0.2*(abs(max(linmod$.cooksd)))   
 p6 <- ggplot(linmod, aes(.hat/(1-.hat), .cooksd)) +
   geom_point(na.rm=TRUE) +
-  geom_label(label=rownames(linmod), nudge_x = 0.1, nudge_y = 0.01, size=2.5) +
+  geom_label(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat/(1-linmod$.hat)))), nudge_y = 0.01, size=2.5) +
   xlab("hii/(1-hii)") +
   ylab("Cook's Distance") +
   ggtitle("Invloedrijke meetpunten", subtitle="Cook's distance vs hii/(1-hii)") +
