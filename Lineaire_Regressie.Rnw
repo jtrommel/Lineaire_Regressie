@@ -62,6 +62,7 @@
 library(tidyverse)
 library(broom)
 library(gridExtra)
+library(nortest)
 library(car)
 @
 
@@ -178,7 +179,7 @@ De waarde van de responsvariabele $y_{i}$ is omwille van de storende factoren $z
 \subsection{Lineair verband}
 \newthought{Het (eenmalige) experiment} geeft volgende resultaten (Figuur~\ref{fig:geg}):
 <<label=geg,fig=TRUE,include=FALSE, echo=FALSE>>=
-geg <- data.frame(x = seq(1,5), y = c(1, 1, 2, 2, 4))
+geg <- data.frame(x = seq(1,8), y = c(1, 1, 2, 2, 3, 4, 4, 5))
 n <- nrow(geg)
 ggplot(data=geg) +
   geom_point(aes(x = x, y = y)) +
@@ -481,7 +482,7 @@ Dat betekent dat de variabele $\frac{(Y_{h}-E(Y_{h}))}{\sqrt{\sigma^{2}\left( \f
 \end{equation}
 
 <<echo=FALSE>>=
-x_h <- c(1:5)
+x_h <- c(1:n)
 betrouwbaarheid <- 0.95
 alpha <- 1 - betrouwbaarheid
 t0 <- qt(1 - alpha/2, n-2)
@@ -604,12 +605,12 @@ grid.arrange(p1, p2, p3, ncol=3)
 <<echo=FALSE>>=
 Nsim <- 100
 nsim <- 5
-b0 <- -1
-b1 <- 7
+b0sim <- -1
+b1sim <- 7
 sigma_U <- 2
 set.seed(2018)
 simul1 <- data.frame(expnr = rep((1:Nsim), each=nsim), x = rep(seq(1,nsim),Nsim), y = 0)
-simul1$y <- b0 + b1*simul1$x + rnorm(nsim*Nsim, 0, sigma_U)
+simul1$y <- b0sim + b1sim*simul1$x + rnorm(nsim*Nsim, 0, sigma_U)
 simul1_mod <- data.frame(expnr=seq(1:Nsim), b0=0, b1=0)
 for (i in 1:Nsim) {
   simul1 %>% filter(expnr==i) %>% lm(y~x,.) %>% tidy() -> tidytabel
@@ -847,6 +848,14 @@ p2
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
+De grafische methode heeft het probleem dat de beslissing over al dan niet normaliteit met het oog wordt genomen. Wat is ''dicht bij de ideale lijn"? Er zijn ook verschillende normaliteitstesten. Ik gebruik het R-package \textbf{nortest}.
+
+<<>>=
+shapiro.test(linmod$.std.resid)
+ks.test(linmod$.std.resid, pnorm)
+# if (n>6) {ad.test(linmod$.std.resid)}
+@
+
 \subsection{Invloedrijke meetwaarden}
 \newthought{De invloed} van de meetwaarden die ver gelegen zijn t.o.v. het gemiddelde $\bar{x}$ is groter dan de invloed van punten die naar het midden toe gelegen zijn. Dat hebben we gezien als \emph{leverage}, en een maat hiervoor zijn de waarden op de diagonaal van de ''hat-matrix" $H$. We spreken van een grote leverage wanneer de h-waarde meer dan twee keer het gemiddelde $\bar{h}=\frac{m}{n}$ waarbij $m$ het aantal modelparameters is (hier 2) en $n$ het aantal meetpunten (hier 5). Een voorwaarde is wel dat het aantal meetpunten $n$ voldoende groot moet zijn, wat in dit voorbeeld niet het geval is.
 
@@ -934,6 +943,8 @@ ymax <- max(linmod$.cooksd) + 0.2*(abs(max(linmod$.cooksd)))
 p6 <- ggplot(linmod, aes(.hat/(1-.hat), .cooksd)) +
   geom_point(na.rm=TRUE) +
   geom_label(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat/(1-linmod$.hat)))), nudge_y = 0.01, size=2.5) +
+  xlim(0,xmax) +
+  ylim(ymin,ymax) +
   xlab("hii/(1-hii)") +
   ylab("Cook's Distance") +
   ggtitle("Invloedrijke meetpunten", subtitle="Cook's distance vs hii/(1-hii)") +
@@ -963,7 +974,7 @@ grid.arrange(p1, p2, p3, p4, p5, p6, ncol=2)
 \begin{figure*}
 \centering
 \includegraphics[width=1\textwidth]{LinReg-diagnostic_plots}
-\caption{}
+\caption{ }
 \label{fig:diagnostic_plots}
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{figure*}
