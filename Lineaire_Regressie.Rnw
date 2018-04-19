@@ -593,7 +593,7 @@ grid.arrange(p1, p2, p3, ncol=3)
 
 \begin{figure}
 \centering
-\includegraphics[height=7cm]{LinReg-controle_veronderstelling3}
+\includegraphics[width=0.8\textwidth]{LinReg-controle_veronderstelling3}
 \caption{ }
 \label{fig:controle_veronderstelling3}
 \setfloatalignment{b}% forces caption to be bottom-aligned
@@ -754,18 +754,24 @@ linmod$.std.resid
 De relevante grafiek wordt dus het verband tussen de studentized residus i.f.v. de onafhankelijke variabele $x_{i}$ of de berekende waarde $\hat{y}_{i}$ (Figuur~\ref{fig:studentized_resid}). 
 
 <<label=studentized_resid,fig=TRUE,include=FALSE, echo=FALSE>>=
-ggplot(data=geg) +
-  geom_point(aes(x = yhat, y = student_res)) +
+xmin <- min(linmod$.fitted) - 0.1*(abs(min(linmod$.fitted)))
+xmax <- max(linmod$.fitted) + 0.1*(abs(max(linmod$.fitted)))
+ymin <- min(c(-3,min(linmod$.std.resid) - 0.1*(abs(min(linmod$.std.resid)))))
+ymax <- max(c(3,max(linmod$.std.resid) + 0.1*(abs(max(linmod$.std.resid)))))
+p1 <- ggplot(data=linmod, aes(x = .fitted, y = .std.resid)) +
+  geom_point() +
+  geom_label(label=rownames(linmod), nudge_x = 0.3, nudge_y = 0.1, size=2.5) +
   geom_hline(yintercept=0, col="blue") +
   geom_hline(yintercept=-2, col="red", linetype="dashed") +
   geom_hline(yintercept=2, col="red", linetype="dashed") +
-  xlim(0, 5) +
-  ylim(-3, 3) +
+  xlim(xmin, xmax) +
+  ylim(ymin, ymax) +
   labs(title = "Veronderstelling 3", 
        subtitle = "Constante variantie",
        x = "berekende waarde van y", 
        y = "studentized residu r") +
   JT.theme
+p1
 @
 
 \begin{marginfigure}[-2cm]
@@ -780,16 +786,19 @@ Omdat het teken van de residutermen eigenlijk niet belangrijk is, gebruikt men o
 
 <<label=scale_location,fig=TRUE,include=FALSE, echo=FALSE>>=
 #  lm_abs_stud_res <- lm(abs(student_res) ~ yhat, data=geg)
-ggplot(data=geg, aes(x = yhat, y = sqrt(abs(student_res)))) +
+ymin <- -0.1*max(sqrt(abs(linmod$.std.resid))) 
+ymax <- 1.1*max(sqrt(abs(linmod$.std.resid))) 
+p3 <- ggplot(data=linmod, aes(x = .fitted, y = sqrt(abs(.std.resid)))) +
   geom_point() +
-  geom_smooth(col="red") +
-  xlim(0, 5) +
-  ylim(-1, 3) +
+  geom_label(label=rownames(linmod), nudge_x = 0, nudge_y = 0.75*abs(ymin), size=2.5) +
+  xlim(xmin, xmax) +
+  ylim(ymin, ymax) +
   geom_hline(yintercept=0, col="blue") +
   labs(title = "Scale-Location", 
        x = "berekende waarde van y", 
        y = expression(sqrt(abs("studentized residu r")))) +
   JT.theme
+p3
 @
 
 \begin{marginfigure}[0cm]
@@ -800,7 +809,6 @@ ggplot(data=geg, aes(x = yhat, y = sqrt(abs(student_res)))) +
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
-\newpage
 \subsection{Veronderstelling 4: $cov(U_{i},U_{j})=0$ voor $i \neq j$}
 Tricky! Als er onderlinge afhankelijkheid is, dan is het meestal via een derde element, bij voorbeeld \'e\'en van de onafhankelijke variabelen. In dit geval is er maar \'e\'en onafhankelijke variabele en vallen we terug op Figuur~\ref{fig:controle_veronderstelling3}. Daar kunnen we eventueel zien of er een verband is tussen $u_{i}$ en $x_{i}$. Een anders situatie is autocorrelatie waarbij de huidige term afhankelijk is van de vorige. Dat komt veel voor bij tijdsreeksen. Daar is het dus het type van de data (tijdsreeks) dat doet twijfelen aan Veronderstelling 4. De Durbin-Watson test (in het ''car"-package) gaat na of er een lag1-autocorrelatie en, voor die situatie, kunnen we dit nagaan voor de fouttermen:
 
@@ -814,15 +822,23 @@ In dit voorbeeld kunnen we autocorrelatie lag1 uitsluiten.
 Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R. Opgeschoond met ggplot geeft dit Figuur~\ref{fig:controle_veronderstelling5}. We zien dat de gemiddelde waarde van de residus (Veronderstelling 1) inderdaad nul is. De normaliteit wordt bevestigd door de ligging t.o.v. de ideale lijn.
 
 <<label=controle_veronderstelling5,fig=TRUE,include=FALSE, echo=FALSE>>=
-quantile1 <- qqnorm(linmod$.std.resid, plot.it = FALSE)[[1]]
-quantile2 <- qqnorm(linmod$.std.resid, plot.it = FALSE)[[2]]
-ggplot(linmod, aes(quantile1, quantile2)) +
+kwantiel <- data.frame(q1=qqnorm(linmod$.std.resid, plot.it = FALSE)[[1]], q2=qqnorm(linmod$.std.resid, plot.it = FALSE)[[2]])
+xmin <- min(kwantiel$q1) - 0.1*(abs(min(kwantiel$q1)))
+xmax <- max(kwantiel$q1) + 0.1*(abs(max(kwantiel$q1)))
+ymin <- min(kwantiel$q2) - 0.1*(abs(min(kwantiel$q2)))
+ymax <- max(kwantiel$q2) + 0.1*(abs(max(kwantiel$q2)))
+p2 <- ggplot(kwantiel, aes(q1, q2)) +
   geom_point(na.rm = TRUE) +
-  geom_line(aes(quantile2, quantile2), col="red", linetype="dashed") +
+  geom_label(label=rownames(kwantiel), nudge_x = 0, nudge_y = 0.1*(abs(max(kwantiel$q2))), size=2.5) +
+  geom_line(aes(x=q2, y=q2)) +
+  # geom_line(aes(q2, q2), col="red", linetype="dashed") +
+  xlim(xmin, xmax) +
+  ylim(ymin, ymax) +
   xlab("Theor. Studentized Quantielen") +
   ylab("Waarg. Studentized Quantielen") +
   ggtitle("Normplot studentized residus") +
   JT.theme
+p2
 @
 
 \begin{marginfigure}
@@ -832,7 +848,7 @@ ggplot(linmod, aes(quantile1, quantile2)) +
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
-\subsection{Andere elementen om in de gaten te houden}
+\subsection{Invloedrijke meetwaarden}
 \newthought{De invloed} van de meetwaarden die ver gelegen zijn t.o.v. het gemiddelde $\bar{x}$ is groter dan de invloed van punten die naar het midden toe gelegen zijn. Dat hebben we gezien als \emph{leverage}, en een maat hiervoor zijn de waarden op de diagonaal van de ''hat-matrix" $H$. We spreken van een grote leverage wanneer de h-waarde meer dan twee keer het gemiddelde $\bar{h}=\frac{m}{n}$ waarbij $m$ het aantal modelparameters is (hier 2) en $n$ het aantal meetpunten (hier 5). Een voorwaarde is wel dat het aantal meetpunten $n$ voldoende groot moet zijn, wat in dit voorbeeld niet het geval is.
 
 Wanneer we vaststellen dat \'e\'en of meerdere meetpunten een leverage hebben die ''groot" is, dan moeten we nog nagaan of dat hefboomeffect een invloed heeft op het model. Wanneer een meetpunt ver van het gemiddelde gelegen is, maar vrijwel op de regressielijn die bepaald wordt door de andere punten, dan is de invloed van dat meetpunt gering en hoeven we ons geen zorgen te maken dat dit meetpunt het model sterk be\"invloedt. Een maat hiervoor is \emph{Cook's Distance}. De Cook's Distance van meetpunt i wordt gegeven door:
@@ -860,12 +876,13 @@ linmod$.cooksd
 @
 
 <<label=Cooks_Distance,fig=TRUE,include=FALSE, echo=FALSE>>=
-ggplot(linmod, aes(seq_along(.cooksd), .cooksd)) +
-  geom_bar(stat="identity", position="identity") +
-  xlab("Obs. Number") +
+p4 <- ggplot(linmod, aes(seq_along(.cooksd))) +
+  geom_linerange(aes(ymin = rep(0,n), ymax = .cooksd), size=2) +
+  xlab("Meetpunt") +
   ylab("Cook's distance") +
-  ggtitle("Cook's distance") +
+  ggtitle("Invloedrijke meetpunten", subtitle="Cook's distance") +
   JT.theme
+p4
 @
 
 \begin{marginfigure}
@@ -887,68 +904,60 @@ geg$kansDi
 
 Hier zijn alle punten invloedrijk, maar dat komt omdat het aantal punten $n$ zeer klein is (5).
 
+De formule voor Cook's Distance
+\begin{equation}
+D_{i}=\frac{r_{i}^{2}}{mMSE}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)^{2}} \right]
+\end{equation}
 
-\newpage
+geeft duidelijk aan wanneer een meetpunt invloedrijk is, en dus de moeite om grondig te bekijken (niet om het te verwijderen!). De invloed van meetpunt $i$ is groot wanneer het residu $r_{i}$ groot is en/of de leverage $h_{ii}$ groot is. Een punt dat ver gelegen is van het zwaartepunt $(\bar{x},\bar{y})$ heeft een grote hefboom t.o.v. het draaipunt $(\bar{x},\bar{y})$ en kan daardoor de regressierechte meer verdraaien door haar invloed op $b_{0}$ en $b_{1}$. Maar indien dat meetpunt gelegen is op of in de buurt van de regressielijn (klein residu $r_{i}$) dan zal de invloed (Cook's Distance) toch klein zijn. Analoog zal een meetpunt dat dicht bij het zwaartepunt ligt toch een grote invloed kunnen hebben op de ligging van de regressielijn wanneer het ver van die lijn (die in grote mate door de (n-1) andere meetpunten wordt bepaald) en dus een groot residu $r_{i}$ heeft. Het is dus zinvol om die twee effecten (residu en leverage) uit elkaar te halen. Dat kan door het residu (studentized) uit te zetten i.f.v. de leverage (Figuur~\ref{fig:Cooks_explained} links) of de Cook's Distance i.f.v. de breuk $\frac{h_{ii}}{(1-h_{ii})}$ (Figuur~\ref{fig:Cooks_explained} rechts).
 
-\subsection{Samenvatting van alle diagnostische plots (Figuur~\ref{fig:diagnostic_plots})}
-
-
-
-<<label=diagnostic_plots,fig=TRUE,include=FALSE, echo=FALSE>>=
-p1 <- ggplot(linmod, aes(.fitted, .resid)) + 
-  geom_point() +
-  geom_hline(yintercept=0, col="red", linetype="dashed") +
-  xlab("Berekende waarden") +
-  ylab("Residus") + 
-  ggtitle("Residu i.f.v. Berekende waarden") +
-  JT.theme
-
-p2 <- ggplot(linmod, aes(quantile1, quantile2)) +
-  geom_point(na.rm = TRUE) +
-  geom_line(aes(quantile2, quantile2), col="red", linetype="dashed") +
-  xlab("Theor. Studentized Quantielen") +
-  ylab("Waarg. Studentized Quantielen") +
-  ggtitle("Normplot studentized residus") +
-  JT.theme
-
-p3 <- ggplot(linmod, aes(.fitted, abs(.std.resid))) +
-  geom_point(na.rm=TRUE) +
-  xlab("Berekende waarden") +
-  ylab("|Gestandaardiseerde residuals|") +
-  ggtitle("Scale-Location") +
-  JT.theme
-    
-p4 <- ggplot(linmod, aes(seq_along(.cooksd), .cooksd)) +
-  geom_bar(stat="identity", position="identity") +
-  xlab("Obs. Number") +
-  ylab("Cook's distance") +
-  ggtitle("Cook's distance") +
-  JT.theme
-    
+<<label=Cooks_explained,fig=TRUE,include=FALSE, echo=FALSE>>=
 p5 <- ggplot(linmod, aes(.hat, .std.resid)) +
   geom_point(aes(size=.cooksd), na.rm=TRUE) +
-  xlab("Invloed (leverage)") +
-  ylab("Gestandaardiseerde Residus") +
-  ggtitle("Invloedrijke punten", subtitle="Residual vs Leverage Plot") +
+  geom_label(label=rownames(linmod), nudge_x = 0.03, nudge_y = 0.01, size=2.5) +
+  xlab("Leverage hii") +
+  ylab("Studentized Residus") +
+  ggtitle("Invloedrijke meetpunten", subtitle="Residu ri i.f.v. leverage hii") +
   scale_size_continuous("Cook's Distance", range=c(1,5)) +
   JT.theme +
-  theme(legend.position="bottom")
+  theme(legend.position="right", legend.title=element_text(size=7) ,legend.text=element_text(size=5))
     
-p6 <- ggplot(linmod, aes(.hat, .cooksd)) +
+p6 <- ggplot(linmod, aes(.hat/(1-.hat), .cooksd)) +
   geom_point(na.rm=TRUE) +
-  xlab("Leverage hii")+ylab("Cook's Distance") +
-  ggtitle("Cook's dist vs Leverage hii/(1-hii)") +
+  geom_label(label=rownames(linmod), nudge_x = 0.1, nudge_y = 0.01, size=2.5) +
+  xlab("hii/(1-hii)") +
+  ylab("Cook's Distance") +
+  ggtitle("Invloedrijke meetpunten", subtitle="Cook's distance vs hii/(1-hii)") +
   geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed") +
   JT.theme
 
-grid.arrange(p1, p2, p3, p4, p5, p6,ncol=2)
+grid.arrange(p5, p6,ncol=2)
+@
+
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth]{LinReg-Cooks_explained}
+\caption{ }
+\label{fig:Cooks_explained}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{figure}
+
+Aan de linkerkant zien we dat Cook's Distance (grootte van het meetpunt) groter wordt naarmate de leverage $h_{ii}$ en het residu $r_{i}$ groter worden. Aan de rechterkant zien we de lineaire relatie tussen Cook's Distance en de breuk $\frac{h_{ii}}{(1-h_{ii})}$. De richtingsco\"effici\"ent van de rechte wordt bepaald door het kwadraat van het residu $r_{i}$. De stippellijnen geven rechten met richtingsco\"effici\"enten gaande van 0 tot 3 in stappen van 0.5. Beide figuren zeggen hetzelfde: meetpunten 1 en 5 (de uitersten) zijn de meest invloedrijke.
+
+
+\subsection{Samenvatting van alle diagnostische plots (Figuur~\ref{fig:diagnostic_plots})}
+
+<<label=diagnostic_plots,fig=TRUE,include=FALSE, echo=FALSE>>=
+grid.arrange(p1, p2, p3, p4, p5, p6, ncol=2)
 @
 
 \begin{figure*}
+\centering
 \includegraphics[width=1\textwidth]{LinReg-diagnostic_plots}
-\caption{Samenvatting van alle diagnostische plots}
+\caption{}
 \label{fig:diagnostic_plots}
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{figure*}
+
 
 \end{document}
