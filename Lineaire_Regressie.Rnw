@@ -179,7 +179,7 @@ De waarde van de responsvariabele $y_{i}$ is omwille van de storende factoren $z
 \subsection{Lineair verband}
 \newthought{Het (eenmalige) experiment} geeft volgende resultaten (Figuur~\ref{fig:geg}):
 <<label=geg,fig=TRUE,include=FALSE, echo=FALSE>>=
-geg <- data.frame(x = seq(1,8), y = c(1, 1, 2, 2, 3, 4, 4, 5))
+geg <- data.frame(x = seq(1,5), y = c(1, 1, 2, 2, 4))
 n <- nrow(geg)
 ggplot(data=geg) +
   geom_point(aes(x = x, y = y)) +
@@ -761,14 +761,13 @@ ymin <- min(c(-3,min(linmod$.std.resid) - 0.2*(abs(min(linmod$.std.resid)))))
 ymax <- max(c(3,max(linmod$.std.resid) + 0.2*(abs(max(linmod$.std.resid)))))
 p1 <- ggplot(data=linmod, aes(x = .fitted, y = .std.resid)) +
   geom_point() +
-  geom_label(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.fitted))), nudge_y = 0, size=2.5) +
+  geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.fitted))), nudge_y = 0, size=2.5) +
   geom_hline(yintercept=0, col="blue") +
   geom_hline(yintercept=-2, col="red", linetype="dashed") +
   geom_hline(yintercept=2, col="red", linetype="dashed") +
   xlim(xmin, xmax) +
   ylim(ymin, ymax) +
-  labs(title = "Veronderstelling 3", 
-       subtitle = "Constante variantie",
+  labs(title = "Constante variantie", 
        x = "Berekende waarde van y", 
        y = "Studentized Residu r") +
   JT.theme
@@ -791,13 +790,13 @@ ymin <- -0.2*max(sqrt(abs(linmod$.std.resid)))
 ymax <- 1.2*max(sqrt(abs(linmod$.std.resid))) 
 p3 <- ggplot(data=linmod, aes(x = .fitted, y = sqrt(abs(.std.resid)))) +
   geom_point() +
-  geom_label(label=rownames(linmod), nudge_x = 0, nudge_y = 0.1*max(sqrt(abs(linmod$.std.resid))), size=2.5) +
+  geom_text(label=rownames(linmod), nudge_x = 0, nudge_y = 0.1*max(sqrt(abs(linmod$.std.resid))), size=2.5) +
   xlim(xmin, xmax) +
   ylim(ymin, ymax) +
   geom_hline(yintercept=0, col="blue") +
   labs(title = "Scale-Location", 
-       x = "berekende waarde van y", 
-       y = expression(sqrt(abs("studentized residu r")))) +
+       x = "Berekende waarde van y", 
+       y = expression(sqrt(abs("Studentized Residu r")))) +
   JT.theme
 p3
 @
@@ -830,8 +829,8 @@ ymin <- min(kwantiel$q2) - 0.2*(abs(min(kwantiel$q2)))
 ymax <- max(kwantiel$q2) + 0.2*(abs(max(kwantiel$q2)))
 p2 <- ggplot(kwantiel, aes(q1, q2)) +
   geom_point(na.rm = TRUE, size=1) +
-  geom_label(label=rownames(kwantiel), nudge_x = 0.1*(abs(max(kwantiel$q2))), nudge_y = 0, size=2.5) +
-  geom_line(aes(x=q2, y=q2), linetype="dashed") +
+  geom_text(label=rownames(kwantiel), nudge_x = 0.1*(abs(max(kwantiel$q2))), nudge_y = 0, size=2.5) +
+  geom_line(aes(x=q2, y=q2), col="blue", linetype="dashed") +
   xlim(min(xmin,ymin), max(xmax,ymax)) +
   ylim(min(xmin,ymin), max(xmax,ymax)) +
   xlab("Theor. Studentized Quantielen") +
@@ -926,7 +925,7 @@ ymin <- min(c(-3,min(linmod$.std.resid) - 0.2*(abs(min(linmod$.std.resid)))))
 ymax <- max(c(3,max(linmod$.std.resid) + 0.2*(abs(max(linmod$.std.resid)))))
 p5 <- ggplot(linmod, aes(.hat, .std.resid)) +
   geom_point(aes(size=.cooksd), na.rm=TRUE) +
-  geom_label(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat))), nudge_y = 0, size=2.5) +
+  geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat))), nudge_y = 0, size=2.5) +
   xlim(xmin,xmax) +
   ylim(ymin,ymax) +
   xlab("Leverage hii") +
@@ -942,7 +941,7 @@ ymin <- min(linmod$.cooksd) - 0.2*(abs(min(linmod$.cooksd)))
 ymax <- max(linmod$.cooksd) + 0.2*(abs(max(linmod$.cooksd)))   
 p6 <- ggplot(linmod, aes(.hat/(1-.hat), .cooksd)) +
   geom_point(na.rm=TRUE) +
-  geom_label(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat/(1-linmod$.hat)))), nudge_y = 0.01, size=2.5) +
+  geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat/(1-linmod$.hat)))), nudge_y = 0.01, size=2.5) +
   xlim(0,xmax) +
   ylim(ymin,ymax) +
   xlab("hii/(1-hii)") +
@@ -974,10 +973,31 @@ grid.arrange(p1, p2, p3, p4, p5, p6, ncol=2)
 \begin{figure*}
 \centering
 \includegraphics[width=1\textwidth]{LinReg-diagnostic_plots}
-\caption{ }
+\caption{Eigen diagnostische ggplots}
 \label{fig:diagnostic_plots}
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{figure*}
 
+<<label=diagnostic_plotsR,fig=TRUE,include=FALSE, echo=FALSE>>=
+par(mfrow = c(3, 2))
+plot(lineair_model, which=1, ask=FALSE)
+plot(lineair_model, which=2, ask=FALSE)
+plot(lineair_model, which=3, ask=FALSE)
+plot(lineair_model, which=4, ask=FALSE)
+plot(lineair_model, which=5, ask=FALSE)
+plot(lineair_model, which=6, ask=FALSE)
+@
+
+\begin{figure*}
+\centering
+\includegraphics[width=1\textwidth]{LinReg-diagnostic_plotsR}
+\caption{Standard R-plots of a linear model}
+\label{fig:diagnostic_plotsR}
+\setfloatalignment{b}% forces caption to be bottom-aligned
+\end{figure*}
+
+<<>>=
+par(mfrow = c(1, 1)) # reset
+@
 
 \end{document}
