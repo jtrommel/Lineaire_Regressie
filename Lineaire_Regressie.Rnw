@@ -859,10 +859,10 @@ xmin <- min(kwantiel$q1) - 0.2*(abs(min(kwantiel$q1)))
 xmax <- max(kwantiel$q1) + 0.1*(abs(max(kwantiel$q1)))
 ymin <- min(kwantiel$q2) - 0.2*(abs(min(kwantiel$q2)))
 ymax <- max(kwantiel$q2) + 0.1*(abs(max(kwantiel$q2)))
-x1 <- as.numeric(quantile(kwantiel$q1)[2])
-x2 <- as.numeric(quantile(kwantiel$q1)[4])
-y1 <- as.numeric(quantile(kwantiel$q2)[2])
-y2 <- as.numeric(quantile(kwantiel$q2)[4])
+y1 <- quantile(linmod$.std.resid, 0.25)
+y2 <- quantile(linmod$.std.resid, 0.75)
+x1 <- qnorm(0.25)
+x2 <- qnorm(0.75)
 slope <- (y2-y1)/(x2-x1)
 interc <- y1 - x1*slope
 p2 <- ggplot(kwantiel, aes(q1, q2)) +
@@ -922,7 +922,7 @@ linmod$.cooksd
 
 <<label=Cooks_Distance,fig=TRUE,include=FALSE, echo=FALSE>>=
 p4 <- ggplot(linmod, aes(seq_along(.cooksd))) +
-  geom_linerange(aes(ymin = rep(0,n), ymax = .cooksd), size=1.5) +
+  geom_linerange(aes(ymin = rep(0,n), ymax = .cooksd), size=0.5) +
   geom_hline(yintercept=(4/(n-m)), col="red") +
   xlab("Meetpunt") +
   ylab("Cook's distance") +
