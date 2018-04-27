@@ -51,7 +51,7 @@
 \usepackage{makeidx}
 \makeindex
 
-\title{Lineair Regressie}
+\title{Enkelvoudige Lineair Regressie}
 \author{Jan Trommelmans}
 
 \begin{document}
@@ -73,13 +73,13 @@ JT.theme <- theme(panel.border = element_rect(fill = NA, colour = "gray10"),
                   panel.grid.major = element_line(colour = "gray85"),
                   panel.grid.minor = element_line(colour = "gray85"),
                   panel.grid.major.x = element_line(colour = "gray85"),
-                  axis.text = element_text(size = 7 , face = "bold"),
-                  axis.title = element_text(size = 8 , face = "bold"),
-                  plot.title = element_text(size = 10 , face = "bold"),
-                  strip.text = element_text(size = 7 , face = "bold"),
+                  axis.text = element_text(size = 9 , face = "bold"),
+                  axis.title = element_text(size = 10 , face = "bold"),
+                  plot.title = element_text(size = 12 , face = "bold"),
+                  strip.text = element_text(size = 9 , face = "bold"),
                   strip.background = element_rect(colour = "black"),
-                  legend.text = element_text(size = 7),
-                  legend.title = element_text(size = 8 , face = "bold"),
+                  legend.text = element_text(size = 9),
+                  legend.title = element_text(size = 10 , face = "bold"),
                   legend.background = element_rect(fill = "white"),
                   legend.key = element_rect(fill = "white"))
 @
@@ -88,11 +88,11 @@ JT.theme <- theme(panel.border = element_rect(fill = NA, colour = "gray10"),
 
 \mainmatter
 
-\chapter{Lineaire Regressie}
+\chapter{Enkelvoudige Lineaire Regressie}
 
 \section{Inleiding}
 
-Het onderscheid tussen een \emph{functioneel} en een \emph{statistisch} verband is dat de waarnemingen bij een statistisch verband \emph{niet} gelegen zijn op de grafiek, maar in de buurt daarvan (Figuur~\ref{fig:intro1}).
+Het onderscheid tussen een \emph{functioneel} en een \emph{statistisch} verband is dat de waarnemingen bij een statistisch verband \emph{niet} precies gelegen zijn op een lijn beschreven door een functie $y=f(x)$, maar in de buurt daarvan (Figuur~\ref{fig:intro1}).
 
 <<label=intro1,fig=TRUE,include=FALSE, echo=FALSE>>=
 N <- 2000
@@ -104,7 +104,7 @@ intro1 <- data.frame(x = runif(N, 1, 5), y=0)
 intro1$y <- b0 + b1*intro1$x + rnorm(N, 0, sigma_U)
 ggplot(data=intro1) +
   geom_point(aes(x = x, y = y), alpha=0.2) +
-  geom_abline(intercept=-1, slope=7, color="red") +
+  geom_abline(intercept=-1, slope=7, color="blue") +
   xlim(0, 6) +
   labs(title = "Een statistisch verband y=f(x)", 
        x = "onafhankelijke variabele x", 
@@ -177,7 +177,7 @@ De waarde van de responsvariabele $y_{i}$ is omwille van de storende factoren $z
 \end{equation}
 
 \subsection{Lineair verband}
-\newthought{Het (eenmalige) experiment} geeft volgende resultaten (Figuur~\ref{fig:geg}):
+\newthought{Een (eenmalig) experiment} geeft volgende resultaten (Figuur~\ref{fig:geg}):
 <<label=geg,fig=TRUE,include=FALSE, echo=FALSE>>=
 geg <- data.frame(x = seq(1,5), y = c(1, 1, 2, 2, 4))
 n <- nrow(geg)
@@ -200,30 +200,31 @@ ggplot(data=geg) +
 geg
 @
 
-We veronderstellen\sidenote{Veronderstelling 2: de vorm van de functie f(x) is $E(Y)=\beta_{0} + \beta_{1}x$} dat de achterliggende Platonische waarheid bestaat uit een lineair verband tussen $E(Y)$ end de onafhankelijke variabele $x$:
+We veronderstellen\sidenote{Veronderstelling 2: de vorm van de functie f(x) is $E(Y)=\beta_{0} + \beta_{1}x$} dat de achterliggende Platonische waarheid een lineair verband tussen $E(Y)$ en de onafhankelijke variabele $x$ is:
 \begin{equation}
 E(Y)=\beta_{0} + \beta_{1}x
 \end{equation}
 
-De waarneming $Y$ is een kansveranderlijke veroorzaakt door de storende factoren en gegroepeerd in de kansveranderlijke U:
+De waarneming $Y$ is een kansveranderlijke veroorzaakt door de storende factoren waarvan de effecten gegroepeerd zijn in de kansveranderlijke U:
 \begin{equation}
 Y=E(Y)+U=\beta_{0} + \beta_{1}x + U
 \end{equation}
 
+\newpage
 \subsection{Schatting van $\beta_{0}$ en $\beta_{1}$ met de kleinste kwadraten methode}
 De methode van de kleinste kwadraten wordt gebruikt om uit \emph{deze} steekproefwaarden een schatting te halen voor $\beta_{0}$ en $\beta_{1}$. De methodiek is bekend: men minimaliseert het criterium:
 \begin{equation}
 Q=\sum\limits_{i=1}^{i=n}\left( Y_{i}-\beta_{0}-\beta_{1}x_{i}  \right)^{2}
 \end{equation}
 
-Daarvoor berekenen we de parti\"ele afgeleiden van $Q$ naar $\beta_{0}$ en $\beta_{1}$ en stellen die gelijk aan nul. Uit de twee vergelijkingen volgen twee getalwaarden $b_{0}$ en $b_{1}$ die berekend worden op basis van de steekproefgegevens. Hierbij worden wat tussenresultaten berekend. 
+Daarvoor berekenen we de parti\"ele afgeleiden van $Q$ naar $\beta_{0}$ en $\beta_{1}$ en stellen die gelijk aan nul. Uit de twee daaruit voortvloeiende \emph{normaalvergelijkingen} volgen twee getalwaarden $b_{0}$ en $b_{1}$ die bere-kend worden op basis van de steekproefgegevens. Hierbij worden wat tussenresultaten berekend. 
 \begin{equation}
   \begin{split}
-  E(X)&=\sum_{i=1}^{i=n}x_{i}\frac{1}{n} \\
-  var(X)&=\frac{\sum_{i=1}^{i=n}(x_{i} - E(X))^2}{n-1}=\frac{SS_{xx}}{n-1} \\
-  E(Y)&=\sum_{i=1}^{i=n}y_{i}\frac{1}{n} \\
-  var(Y)&=\frac{\sum_{i=1}^{i=n}(y_{i} - E(Y))^2}{n-1}=\frac{SS_{yy}}{n-1} \\
-  covar(X,Y)&=\frac{\sum_{i=1}^{i=n}(x_{i}-\bar(x))(y_{i}-\bar{y})}{n-1}=\frac{S_{xy}}{n-1}
+  E(X)&=\bar{x}=\sum_{i=1}^{i=n}x_{i}\frac{1}{n} \\
+  var(X)&=\frac{\sum_{i=1}^{i=n}(x_{i} - E(X))^2}{n-1}=\frac{\sum_{i=1}^{i=n}(x_{i} - \bar{x})^2}{n-1}=\frac{SS_{xx}}{n-1} \\
+  E(Y)&=\bar{y}=\sum_{i=1}^{i=n}y_{i}\frac{1}{n} \\
+  var(Y)&=\frac{\sum_{i=1}^{i=n}(y_{i} - E(Y))^2}{n-1}=\frac{\sum_{i=1}^{i=n}(y_{i} - \bar{y})^2}{n-1}=\frac{SS_{yy}}{n-1} \\
+  covar(X,Y)&=\frac{\sum_{i=1}^{i=n}(x_{i}-\bar{x})(y_{i}-\bar{y})}{n-1}=\frac{S_{xy}}{n-1}
   \end{split}
 \end{equation}
 
@@ -259,12 +260,12 @@ geg$diffy2 <- (geg$y - gem_y)^2
 \end{tabular}
 \end{center}
 \medskip
-Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden en het verschil tussen de berekende ($\hat{y}_{i}$) en waargenomen waarde ($y_{i}$) bepaald worden. Dat verschil noemen we het \emph{residu} ($r_{i}$):
+Met deze waarden van $b_{0}$ en $b_{1}$ kunnen de berekende waarden ($\hat{y}_{i}$) en het verschil tussen deze berekende en waargenomen waarde ($y_{i}$) bepaald worden. Dat verschil noemen we het \emph{residu}:
 \begin{equation}
 r_{i}=y_{i}-\hat{y}_{i}=y_{i}-b_{0}-b_{1}x_{i}
 \end{equation}
 
-Het residu $r_{i}$ is dus niet enkel afhankelijk van de waarneming die verstoord wordt door de storingen gegroepeerd in $U_{i}$, maar ook door de waarden van de steekproef die $b_{0}$ en $b_{1}$ bepalen. De variantie van $r_{i}$ zal dus groter zijn dan de variantie van de foutterm $U_{i}$. We maken daarom een duidelijk onderscheid tussen de foutterm $U(x)$ (die niet toegankelijk is) en de residus $r_{i}$ (die, voor elke steekproef, berekenbaar zijn). Bovendien zal de variantie van $r_{i}$ \emph{verschillend} zijn van de variantie van $r_{j}$ wanneer $i \neq j$! Zie hiervoor \ref{subsec:Veronderstelling3}.
+Het residu $r_{i}$ is dus niet enkel afhankelijk van de waarneming (die verstoord wordt door $U_{i}$) maar ook door de waarden van de steekproef die $b_{0}$ en $b_{1}$ bepalen. De variantie van $r_{i}$ zal dus groter zijn dan de variantie van de foutterm $U_{i}$. We maken daarom een duidelijk onderscheid tussen de foutterm $U(x)$ (die niet toegankelijk is) en de residus $r_{i}$ (die, voor elke steekproef, berekenbaar zijn). Bovendien zal de variantie van $r_{i}$ \emph{verschillend} zijn van de variantie van $r_{j}$ wanneer $i \neq j$! Zie hiervoor \ref{subsec:Veronderstelling3}.
 
 \begin{equation}
   \begin{split}
@@ -290,18 +291,18 @@ tabel
 Wanneer we de parameters $b_{0}$ en $b_{1}$ bepalen met de kleinste kwadraten methode dan heeft de berekende rechte volgende eigenschappen:
 \begin{itemize}
   \item de rechte gaat door het zwaartepunt $(\bar{x},\bar{y})$. Dit volgt uit de vergelijking voor $b_{0}$ die we kunnen herschrijven als $\bar{y}=b_{0}+b_{1}\bar{x}$.
-  \item de som van de residus $r_{i}$) is nul. Dat volgt uit
+  \item de som van de residus $r_{i}$ is nul. Dat volgt uit
   \begin{equation}
   \sum\limits_{i=1}^{i=n}r_{i}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})=n\bar{y}-nb_{0}-nb_{1}\bar{x}=n(\bar{y}-b_{0}-b_{1}\bar{x})=0
   \end{equation}
    \item de som van de berekende waarden $y_{i}$ is gelijk aan de som van de waargenomen waarden $y_{i}$: $\sum_{i=1}^{i=n}\hat{y}_{i}=\sum_{i=1}^{i=n}y_{i}$. Dat volgt uit het voorgaande.
-  \item de residus $r_{i}$ en de onafhankelijke waarden $x_{i}$ zijn ortogonaal. Omslachtig bewijs\sidenote{''Kwantitatieve beleidsmethoden: enkelvoudige en meervoudige regressie", Peter Goos, 2014, pp. 13}
+  \item de residus $r_{i}$ en de onafhankelijke waarden $x_{i}$ zijn ortogonaal\sidenote{''Kwantitatieve beleidsmethoden: enkelvoudige en meervoudige regressie", Peter Goos, 2014, pp. 13}.
   \item de residus $r_{i}$ en de berekende waarden $\hat{y}_{i}$ zijn ortogonaal. Dat volgt uit het voorgaande en het lineair verband tussen $\hat{Y}$ en $x$.
 \end{itemize}
 
 \subsection{Eigenschappen van de kleinste kwadratenschatters}
 
-\newthought{Na het uitvoeren van een nieuw experiment} krijg je andere waarden voor $y_{i}$ (niet voor $x_{i}$!). Daaruit volgt dat $SS_{xx}$ hetzelfde blijft, maar $SS_{yy}$ en $S_{xy}$ veranderen. Daardoor verandert $b_{1}=\frac{S_{xy}}{SS_{xx}}$ en dus ook $b_{0}=\bar{y}-b_{1}\bar{x}$. Het toeval dat de fouten U genereert, zal dus ook de kleinste kwadratenschatters be\"ivloeden. Dit betekent dat $b_{0}$ en $b_{1}$ manifestaties zijn van kansvariabelen $B_{0}$ en $B_{1}$.
+\newthought{Na het uitvoeren van een nieuw experiment} krijg je andere waarden voor $y_{i}$ (niet voor $x_{i}$!). Daaruit volgt dat $SS_{xx}$ hetzelfde blijft, maar $SS_{yy}$ en $S_{xy}$ veranderen. Daardoor verandert $b_{1}=\frac{S_{xy}}{SS_{xx}}$ en dus ook $b_{0}=\bar{y}-b_{1}\bar{x}$. Het toeval dat de fouten U genereert, zal dus ook de kleinste kwadratenschatters be\"invloeden. Dit betekent dat $b_{0}$ en $b_{1}$ manifestaties zijn van kansvariabelen $B_{0}$ en $B_{1}$.
 
 We kunnen bewijzen\sidenote{Goos pp. 14 e.v.} dat $b_{0}$ en $b_{1}$ onvertekende schatters zijn van de Platonische $\beta_{0}$ en $\beta_{1}$:
 \begin{equation}
@@ -314,27 +315,27 @@ We kunnen bewijzen\sidenote{Goos pp. 14 e.v.} dat $b_{0}$ en $b_{1}$ onvertekend
 We kunnen ook de variantie (en dus de standaardafwijking) van $B_{0}$ en $B_{1}$ berekenen, mits wat bijkomende voorwaarden. De nieuwe veronderstellingen zijn:
 \begin{itemize}
   \item \emph{homoscedasticiteit}: $var(U_{i})=\sigma^{2}=constant$\sidenote{Veronderstelling 3: de variantie van alle fouttermen is gelijk}
-  \item \emph{onafhankelijkheid van de fouttermen}: $cov(U_{i},U_{j})=0$ voor $i \neq j$\sidenote{Veronderstelling 4}
+  \item \emph{onafhankelijkheid van de fouttermen}: $cov(U_{i},U_{j})=0$ voor $i \neq j$\sidenote{Veronderstelling 4: onafhankelijkheid van de fouttermen}
 \end{itemize}
 
 In dat geval is
 \begin{equation}
   \begin{split}
-  var(B_{0}) &= \frac{\sigma^{2}}{SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} \\
+  var(B_{0}) &= \frac{\sigma^{2}}{SS_{xx}}\left[ \frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} \right] \\
   var(B_{1}) &= \frac{\sigma^{2}}{SS_{xx}} \\
   cov(B_{0}, B_{1}) &= -\frac{\sigma^{2}}{SS_{xx}}\bar{x}
   \end{split}
 \end{equation}
 
-We zien overal de breuk $\frac{\sigma^{2}}{SS_{xx}}$ opduiken, met in de teller de \emph{onbekende} variantie van de foutterm $\sigma^{2}$ en in de noemer de \emph{constante} $SS_{xx}$.
+We zien overal de breuk $\frac{\sigma^{2}}{SS_{xx}}$ opduiken, met in de teller de \emph{onbekende} variantie van de foutterm en in de noemer de \emph{constante} $SS_{xx}$.
 
-De \emph{Gauss-Markov stelling} toont aan dat de schatters voor $\beta_{0}$ $\beta_{1}$ die we bekomen via de kleinste kwadratenmethod niet alleen onvertekend zijn, maar bovendien de kleinste variantie hebben van alle onvertekende schatters die lineair zijn in de responsen $Y_{i}$.
+De \emph{Gauss-Markov stelling} toont aan dat de schatters voor $\beta_{0}$ en $\beta_{1}$ die we bekomen via de kleinste kwadratenmethode niet alleen onvertekend zijn, maar bovendien de kleinste variantie hebben van alle onvertekende schatters die lineair zijn in de responsen $Y_{i}$.
 
 \subsection{Een schatter voor $\sigma^{2}$}
 
 De varianties van $B_{0}$ en $B_{1}$ zijn afhankelijk van de (constant veronderstelde) variantie van de foutterm. Aangezien $B_{0}$, $B_{1}$ en $Y_{i}$ kansvariabelen zijn, zal $R_{i}=Y_{i}-B_{0}-B_{1}x_{i}$ ook een kansveranderlijke zijn en dus ook de som van de kwadraten ervan (SSE= Sum of Squared Errors):
 \begin{equation}
-SSE=\sum\limits_{i=1}^{i=n}\hat{R_{i}}^{2}=\sum\limits_{i=1}^{i=n}(Y_{i}-B_{0}-B_{1}x_{i})^{2}
+SSE=\sum\limits_{i=1}^{i=n}R_{i}^{2}=\sum\limits_{i=1}^{i=n}(Y_{i}-B_{0}-B_{1}x_{i})^{2}
 \end{equation}
 
 Het aantal vrijheidsgraden van SSE is (n-2) omdat twee vrijheidsgraden verloren gaan omdat we  $B_{0}$ en $B_{1}$ moeten schatten. Men kan aantonen dat
@@ -344,7 +345,7 @@ E(\frac{SSE}{n-2})=E(MSE)=\sigma^{2}
 
 Voor \'e\'en bepaald experiment krijgt de kansveranderlijke SSE een concrete waarde nl;
 \begin{equation}
-sse=\sum\limits_{i=1}^{i=n}\hat{r_{i}}^{2}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}
+sse=\sum\limits_{i=1}^{i=n}r_{i}^{2}=\sum\limits_{i=1}^{i=n}(y_{i}-b_{0}-b_{1}x_{i})^{2}
 \end{equation}
 
 Een schatter voor de onbekende $\sigma^{2}$ is dus
@@ -361,7 +362,7 @@ s <- sqrt(s_sq)
 In dit voorbeeld is $s^{2}=$\Sexpr{round(s_sq,2)}. De schatters voor de variantie van $B_{0}$, $B_{1}$ en hun covariantie worden gegeven door:
 \begin{equation}
   \begin{split}
-  s^{2}_{B_{0}} &= \frac{s^{2}}{SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} = \frac{sse^{2}}{(n-2)SS_{xx}}\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} \\
+  s^{2}_{B_{0}} &= \frac{s^{2}}{SS_{xx}}\left[ \frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n} \right] = \frac{sse^{2}}{(n-2)SS_{xx}}\left[\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n}\right] \\
   s^{2}_{B_{1}} &= \frac{s^{2}}{SS_{xx}} =  \frac{sse^{2}}{(n-2)SS_{xx}}\\
   s_{B_{0}, B_{1}} &= -\frac{s^{2}}{SS_{xx}}\bar{x} = -\frac{sse^{2}}{(n-2)SS_{xx}}\bar{x}
   \end{split}
@@ -375,10 +376,10 @@ s_b1 <- (s/sqrt(ss_xx))
 De schatting voor de standaardafwijking van $b_{0}$ is \Sexpr{round(s_b0,2)} en van $b_{1}$ is \Sexpr{round(s_b1,2)}.
 
 \subsection{Betrouwbaarheidsintervallen voor $\beta_{0}$ en $\beta_{1}$}
-Als we veronderstellen\sidenote{Veronderstelling 5: de kansvariabelen $U_{i}$ zijn normaal verdeeld}, dan volgt daaruit dat ook de kansvariabelen $Y_{i}$ en dus ook $Y$ normaal verdeeld zijn (de som van een constante $E(Y_{i})$ en een normaal verdeelde kansvariabele). Aangezien de kleinste kwadratenschatters $B_{0}$ en $B_{1}$ lineaire combinaties zijn van de waarnemingen $Y_{i}$ zullen die ook normaal verdeeld zijn. We kennen hun gemiddelde waarde en hun variantie en kunnen dus direct schrijven dat:
+Als we veronderstellen dat de foutterm $U(x)$ normaal verdeeld is $N(0,\sigma)$\sidenote{Veronderstelling 5: de kansvariabelen $U_{i}$ zijn normaal verdeeld}, dan volgt daaruit dat ook de kansvariabelen $Y_{i}$ en dus ook $Y$ normaal verdeeld zijn (de som van een constante $E(Y_{i})$ en een normaal verdeelde kansvariabele). Aangezien de kleinste kwadratenschatters $B_{0}$ en $B_{1}$ lineaire combinaties zijn van de waarnemingen $Y_{i}$ zullen die ook normaal verdeeld zijn. We kennen hun gemiddelde waarde en hun variantie en kunnen dus direct schrijven dat:
 \begin{equation}
   \begin{split}
-  B_{0} &\sim N(\beta_{0}, \frac{\sigma}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})} \\
+  B_{0} &\sim N(\beta_{0}, \frac{\sigma}{\sqrt{SS_{xx}}}\left[\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})}\right] \\
   B_{1} &\sim N(\beta_{1}, \frac{\sigma}{\sqrt{SS_{xx}}})
   \end{split}
 \end{equation}
@@ -386,7 +387,7 @@ Als we veronderstellen\sidenote{Veronderstelling 5: de kansvariabelen $U_{i}$ zi
 We kennen de juiste waarde van $\sigma$ niet, maar wel de schatter ervan $s$. Dan weten we dat:
 \begin{equation}
   \begin{split}
-  \frac{B_{0} - \beta_{0}}{\frac{s}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})}}  &\sim T_{(n-2)}  \\
+  \frac{B_{0} - \beta_{0}}{\frac{s}{\sqrt{SS_{xx}}}\left[\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})}\right]}  &\sim T_{(n-2)}  \\
   \frac{B_{1} - \beta_{1}}{\frac{s}{\sqrt{SS_{xx}}}} &\sim T_{n-2}
   \end{split}
 \end{equation}
@@ -395,12 +396,12 @@ Hiermee kunnen we intervallen bepalen voor $\beta_{0}$ en $\beta_{1}$ met een be
 \begin{equation}
   \begin{split}
   t_{0}&=F_{T}^{-1}(1-\frac{\alpha}{2}, n-2) \\
-  b_{0} - t_{0}\frac{s}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})} &< \beta_{0} < b_{0} + t_{0}\frac{s}{\sqrt{SS_{xx}}}\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})} \\
+  b_{0} - t_{0}\frac{s}{\sqrt{SS_{xx}}}\left[\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})}\right] &< \beta_{0} < b_{0} + t_{0}\frac{s}{\sqrt{SS_{xx}}}\left[\sqrt{\frac{\sum\limits_{i=1}^{i=n}x_{i}^{2}}{n})}\right] \\
   b_{1}-t_{0}\frac{s}{\sqrt{SS_{xx}}} &< \beta_{1} <  b_{1}+t_{0}\frac{s}{\sqrt{SS_{xx}}}
   \end{split}
 \end{equation}
 
-In R the inverse cumulatieve kansfunctie is $t_{0}=qt(1-\frac{\alpha}{2}, n-2)$. In dit voorbeeld zijn de 95\%-betrouwbaarheidsintervallen:
+In R de inverse cumulatieve kansfunctie is $qt(x,df)$ zodat $t_{0}=qt(1-\frac{\alpha}{2}, n-2)$. In dit voorbeeld zijn de 95\%-betrouwbaarheidsintervallen:
 <<echo=FALSE>>=
 betrouwbaarheid <- 0.95
 alpha <- 1 - betrouwbaarheid
@@ -412,8 +413,8 @@ bgbeta1 <- b1 + t0*s_b1
 @
 \begin{equation}
   \begin{split}
-  \Sexpr{round(ogbeta0,2)} &< \beta_{0} < \Sexpr{round(bgbeta0,2)} \\
-  \Sexpr{round(ogbeta1,2)} &< \beta_{1} < \Sexpr{round(bgbeta1,2)}
+  \Sexpr{round(ogbeta0,3)} &< \beta_{0} < \Sexpr{round(bgbeta0,3)} \\
+  \Sexpr{round(ogbeta1,3)} &< \beta_{1} < \Sexpr{round(bgbeta1,3)}
   \end{split}
 \end{equation}
 
@@ -424,9 +425,9 @@ De toetsveranderlijke is $\phi^{*}=\frac{(b_{1}-\beta_{1})}{s_{b_{1}}}$
 Deze is $T_{(n-2)}$-verdeeld. De p-waarde is dan gelijk aan $p=2*(1-F_{T}(|\phi^{*}|,(n-2)))=$\Sexpr{round(2*(1-pt(abs(b1/s_b1),n-2)),3)}.
 
 \subsection{Kwaliteit van het model}
-\newthought{De determinatieco\"effici\"ent}
-\medskip
-Opsplitsen van $SSTO$ in een som van $SSR$ en $SSE$. $SSR$ is de variantie die verklaard wordt door het model, $SSE$ het onverklaarde deel. De determinatieco\"effici\"ent is de verhouding van $SSR$ t.o.v. $SSTO$ en ligt tussen 0 (geen verband) en 1 (perfect lineair verband). De formules:
+\newthought{De determinatieco\"effici\"ent}.\\
+
+We splitsen $SSTO$ op in een som van $SSR$ en $SSE$. $SSR$ is de variantie die verklaard wordt door het model, $SSE$ het onverklaarde deel. De determinatieco\"effici\"ent is de verhouding van $SSR$ t.o.v. $SSTO$ en ligt tussen 0 (geen verband) en 1 (perfect lineair verband). De formules:
 \begin{equation}
   \begin{split}
   SSTO &= \sum\limits_{i=1}^{i=n}(y_{i}-\bar{y})^{2} \\
@@ -453,15 +454,26 @@ names(lineair_model)
 @
 
 \medskip
-Tussenresultaten, zoals $SS_{xx}$ of $S_{xy}$ zijn niet te vinden.
+Het is bekend dat we de determinatieco\"effici\"ent $R^{2}$ artificieel kunnen verhogen door bijkomende onafhankelijke variabelen in te voeren. Bij drie waarnemingen kunnen we komen tot een perfect functioneel verband door naast $x$ ook $x^{2}$ als variabele op te nemen. In het algemeen zal een model \emph{gesatureerd} zijn als het aantal variabelen gelijk is aan $(n-1)$.
 
-\newthought{Je kan de significantie} van het lineair model toetsen door een Analysis Of Variance (anova) te doen van het lineair model. Daarin krijg je een overzicht van de vrijheidsgraden, de sums of squares ($SSR$ en $SSE$) en de daaruit afgeleide F-waarde en de p-waarde.
+Daarom gaat met de determinatieco\"effici\"ent aanpassen om rekening te houden met het aantal variabelen:
+\begin{equation}
+R_{adj}^2=1-(1-R^{2})\frac{n-1}{n-p-1}
+\end{equation}
+met $p$ gelijk aan het aantal modelparameters (de constante term niet inbegrepen), of $(m-1)$. In dit voorbeeld is $m=2$ en dus $p=1$ zodat
+\begin{equation}
+R_{adj}^2=1-(1-R^{2})\frac{n-1}{n-2}=1-(1-R^{2})\frac{4}{3}
+\end{equation}
+
+In dit voorbeeld is $R_{adj}^{2}=$\Sexpr{round((1-(1-R_sq)*(n-1)/(n-2)),4)}.
+
+\newthought{Je kan de significantie} van het lineair model toetsen door een Analysis Of Variance (anova) te doen van het lineair model. Daarin krijg je een overzicht van de vrijheidsgraden, de sums of squares ($SSR$ en $SSE$), de mean sums of squares ($MSR$ en $MSE$), de daaruit afgeleide F-waarde en de p-waarde.
 
 <<>>=
 anova(lineair_model)
 @
 
-\subsection{Voorspellen gebruik makend van het lineair model}
+\subsection{Voorspellingen gebruik makend van het lineair model}
 \newthought{Voorspellen van $E(Y_{h})$}
 
 We nemen een waarde van de onafhankelijk variabele $x=x_{h}$ en berekenen hiermee de waarde $\hat{y}_{h}=b_{0}+b_{1}x_{h}$. Het model doet een voorspelling voor $E(Y_{h})$, niet voor $y_{h}$ (dat bekijken we in volgende paragraaf). Omdat $B_{0}$ en $B_{1}$ kansvariabelen zijn (normaal verdeeld) zal $Y_{h}$ ook normaal verdeeld zijn met:\sidenote{Goos, pp. 28}
@@ -496,14 +508,18 @@ grenzen_Eyh <- data.frame(xh=x_h, fit= Eyh, ondergrens=ogEyh, bovengrens=bgEyh)
 <<>>=
 grenzen_Eyh
 @
+\medskip
+In R gebruiken we de \emph{predict} functie: je start met de $x_{h}$-waarden waarvoor je een voorspelling van $E(y_{h})$ wil. Die moeten in een data-frame geplaatst met als kolomnaam dezelfde naam als diegene die gebruikt werd voor de onafhankelijke veranderlijke bij de opstelling van het lineair model (in dit gevel $x$). Je kan dan de voorspelde waarde(n) en de $(1-\alpha)$ onder- en bovengrens berekenen. Bijkomende info is mogelijk bv. de standard error.
 
-In R gebruiken we de \emph{predict} functie: je start met de $x_{h}$-waarden waarvoor je een voorspelling van $E(y_{h})$ wil. Die moeten in een data-frame geplaatst met als kolomnaam dezelfde naam als diegene die gebruikt werd voor de onafhankelijke veranderlijke bij de opstelling van het lineair model (in dit gevel $x$). Je kan dan de voorspelde waarde(n) en de $(1-\alpha)$ onder- en bovengrens. Bijkomende info is mogelijk bv. de standard error.
-
-<<>>=
+<<echo=FALSE>>=
 pred_xh <- data.frame(x=x_h)
-predict(lineair_model, pred_xh, interval= "confidence", level=0.95, se.fit=TRUE)
+pred_yh <- as.data.frame(predict(lineair_model, pred_xh, interval= "confidence", level=0.95))
+pred_yh$xh <- pred_xh$x
+pred_yh <- pred_yh[, c(4,1,2,3)]
 @
-
+<<>>=
+pred_yh
+@
 \newthought{Wanneer je de waarde van een nieuw experiment} $y_{h}$ wil voorspellen dan volgt uit:
 \begin{equation}
 Y_{h}=E(Y_{h}) + U_{h} = \hat{Y}_{h} + U_{h}
@@ -527,11 +543,17 @@ grenzen_yh <- data.frame(xh=x_h, fit=Eyh, ondergrens=ogyh, bovengrens=bgyh)
 <<>>=
 grenzen_yh
 @
-
+\medskip
 In R gebruiken we opnieuw de \emph{predict} functie met als keuze "predict" voor de parameter \emph{interval}:
 
+<<echo=FALSE>>=
+pred_y <- as.data.frame(predict(lineair_model, pred_xh, interval= "predict", level=0.95))
+pred_y$xh <- pred_xh$x
+pred_y <- pred_y[, c(4,1,2,3)]
+@
+
 <<>>=
-predict(lineair_model, pred_xh, interval= "predict", level=0.95)
+pred_y
 @
 
 \subsection{Gebruik van package ''broom"}
@@ -543,18 +565,25 @@ broom::augment(lineair_model)
 linmod <- augment(lineair_model) #make model results available in data.frame
 broom::glance(lineair_model)
 @
-
+\newpage
 \section{Controle van de veronderstellingen}
 
 \subsection{Veronderstelling 1: $E(U_{i})=0$}
-Behalve wanneer er herhalingsmetingen zijn, kennen we geen meerdere waarden voor $y_{i}$, en dus ook geen meerdere waarden voor $r_{i}$. We kunnen dus niet nagaan of $E(U_{i})=0$.  
+We hebben geen directe toegang tot de kansvariabele $U_{i}$. De residus $r_{i}$ zijn beschikbaar, maar door de aard van de gebruikte methode (kleinste kwadraten) zal de gemiddelde waarde $E(r_{i})$ altijd gelijk aan nul zijn, zodat we hieruit geen bijkomende info kunnen halen. Wanneer de fouten ontstaan door verschillende factoren waarvan er niet \'e\'en overheersend is, dan kunnen we de Centrale Limietstelling inroepen. Dit betekent echter niet automatische dat $E(U_{i})=0$.
 
 \subsection{Veronderstelling 2: $E(Y)=\beta_{0}+\beta_{1}x$}
-Behalve indien je theo-retische gronden hebt om dit functievoor-schrift voor te stellen (en dan spreken we over een regressie en niet een corelatie), zie ik geen mogelijkheid om dit te controleren. Ik vermoed dat deze aanname meestal puur visueel gebeurt.
+Deze veronderstelling kan getoests worden door een scatterplot te maken van de residus $r_{i}$ i.f.v. de waarden van de onafhankelijke variabele $x_{i}$ of i.f.v. de berekende waarden $\hat{y_{i}}$. Indien de veronderstelling van lineariteit correct is dan moeten, als $E(U_{i})=0$ en $var(U_{i})=constant$, de residus $r_{i}$ willekeurig verdeeld zijn rondom de nullijn. Er mag geen patroon zichtbaar zijn. Dezelfde grafiek wordt ook gebruikt om na te gaan of voldaan is aan veronderstelling 3. 
+@
 
 \subsection{Veronderstelling 3: $var(U_{i})=\sigma^{2}=constant$}
 \label{subsec:Veronderstelling3}
-De waarden voor $u_{i}$ zijn onbekend omdat $u_{i}=y_{i}-\beta_{0}-\beta_{1}x_{i}$, en $\beta_{0}$ en $\beta_{1}$ niet gekend zijn. We kennen wel de waarden van de residus $r_{i}$, maar meestal slechts \'e\'en waarde $r_{i}$ voor elke waarde van $x_{i}$. We kunnen een grafiek maken van $r_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn(=het gemiddelde van residus en fouten)". Dat zou een indicator kunnen zijn dat $\sigma$ niet constant is. Je kan als x-as i.p.v. de onafhankelijke variabele $x$ ook de berekende waarde $\hat{y}$ nemen: dat geeft hetzelfde beeld aangezien er een lineair verband is tussen beide. Tenslotte kan men ook i.p.v. met de residus $r_{i}$ te werken, gestandaardiseerde residus $\frac{r_{i}}{s}$ gebruiken. Die zijn dimensieloos en onafhankelijk van de aard en grootte van de responsvariabele $y$. De interpretatie van de grafiek is dan onafhankelijk van de concrete situatie: we gaan na of er residus zijn die b.v. meer dan 2 standaardafwijkingen groot zijn.
+De waarden voor $u_{i}$ zijn onbekend omdat $u_{i}=y_{i}-\beta_{0}-\beta_{1}x_{i}$, en $\beta_{0}$ en $\beta_{1}$ niet gekend zijn. We kennen wel de waarden van de residus $r_{i}$, maar meestal slechts \'e\'en waarde $r_{i}$ voor elke waarde van $x_{i}$. We kunnen een grafiek maken van $r_{i}$ i.f.v. $x_{i}$ (Figuur~\ref{fig:controle_veronderstelling3}-Links). Daarop kan je zien of er een patroon zichtbaar is dat afwijkt van ''chaos rondom de nullijn(=het gemiddelde van residus en fouten)". Dat zou een indicator kunnen zijn dat $\sigma$ niet constant is. Je kan als x-as i.p.v. de onafhankelijke variabele $x$ ook de berekende waarde $\hat{y}$ nemen: dat geeft hetzelfde beeld als er een lineair verband is tussen beide (Figuur~\ref{fig:controle_veronderstelling3}-Midden). Tenslotte kan men ook i.p.v. met de residus $r_{i}$ te werken, gestandaardiseerde residus $\frac{r_{i}}{s}$ gebruiken. Die zijn dimensieloos en onafhankelijk van de aard en grootte van de responsvariabele $y$. De interpretatie van de grafiek is dan onafhankelijk van de concrete situatie: we gaan na of er residus zijn die b.v. meer dan 2 standaardafwijkingen groot zijn (Figuur~\ref{fig:controle_veronderstelling3}-Rechts).
+
+Package \textbf{car} bevat een \emph{goodness of fit}-test voor ''non-constant error variance":
+<<>>=
+ncvTest(lineair_model)
+@
+
 <<label=controle_veronderstelling3,fig=TRUE,include=FALSE, echo=FALSE>>=
 p1 <- ggplot(data=geg) +
   geom_point(aes(x = x, y = r)) +
@@ -627,7 +656,7 @@ simul1 %>% group_by(x) %>% summarise(variantie=var(resid))
 
 Wat opvalt is dat de variantie van de residus \emph{kleiner} is aan de uiteinden dan in het midden! Dit komt omdat de meetpunten aan de uiteinden een grotere invloed (\emph{leverage}) hebben bij het bepalen van $b_{0}$ en $b_{1}$. Hierdoor ligt de rechte $b_{0}+b_{1}x$ dichter bij de meetwaarden $y_{i}$ aan de uiteinden, waardoor ook het residu daar kleiner wordt. De variantie van de residus $r_{i}$ is dus niet enkel afhankelijk van $\sigma$ maar ook van de invloed (\emph{leverage}) dat punt ($x_{i}, y_{i}$) heeft op de berekening van de parameters van de rechte. De meer extreme punten zijn diegene waarvoor $(x_{i}-\bar{x})$ groot is. De \emph{leverage} kunnen we halen uit de \emph{hat-matrix H}.
 
-\newthought{De hat-matrix H} komt naar voor als we een matrixnotatie gebruiken voor de residus. Dat maakt uitbreiding naar lineaire modellen met m\'e\'er dan \'e\'en onafhankelijke variabele zeer gemakkelijk. In formulevorm zijn de residus gegeven door:
+\newthought{De hat-matrix H} komt naar voor wanneer we een matrixnotatie gebruiken voor de residus. Dat maakt uitbreiding naar lineaire mo-dellen met meer dan \'e\'en onafhankelijke variabele zeer gemakkelijk. In formulevorm zijn de residus gegeven door:
 \begin{equation}
 r_{i}=y_{i}-\hat{y}_{i}=y_{i}-b_{0}-b_{1}x_{i} \quad i=1 \ldots n
 \end{equation}
@@ -720,12 +749,12 @@ H <- X%*%solve(t(X)%*%X)%*%t(X)
 sum(diag(H))
 @
 
-Indien elke waarneming hetzelfde belang zou hebben dan zouden de diagonaalwaarden overal gelijk moeten zijn aan het aantal modelparameters gedeeld door $n$. In dit geval is dat \Sexpr{round(sum(diag(H))/n,3)}. Wanneer we de matrix $\boldsymbol{H}$ bekijken dat is dat niet het geval: \emph{de eindpunten} hebben een hoger dan gemiddelde hefboom, \emph{de middelpunten} hebben een lager dan gemiddelde hefboom.
+Indien elke waarneming hetzelfde belang zou hebben dan zouden de diagonaalwaarden overal gelijk moeten zijn aan het aantal mo-delparameters gedeeld door $n$. In dit geval is dat \Sexpr{round(sum(diag(H))/n,3)}. Wanneer we de matrix $\boldsymbol{H}$ bekijken dat is dat niet het geval: \emph{de eindpunten} hebben een hoger dan gemiddelde hefboom, \emph{de middelpunten} hebben een lager dan gemiddelde hefboom.
 
 <<>>=
 H
 @
-
+\medskip
 De variantie van de residus wordt dus ook bepaald door de hefboomwaarden:
 \begin{equation}
 var(r_{i})=\sigma^{2}\left( 1-h_{i,i} \right)
@@ -741,9 +770,11 @@ stdres_{i}=\frac{r_{i}}{\sqrt{MSE\left(1-h_{i,i} \right)}}
 \end{equation}
 
 In dit voorbeeld zijn de studentized residus dus:
-<<>>=
+<<echo=FALSE>>=
 geg$hdiag <- diag(H)
 geg$student_res <- geg$r/sqrt((sse/(n-2))*(1-geg$hdiag))
+@
+<<>>=
 geg$student_res
 @
 
@@ -782,7 +813,7 @@ p1
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
 
-Omdat het teken van de residutermen eigenlijk niet belangrijk is, gebruikt men ook de ''Scale-Location''-plot waarbij men de wortel van de absolute waarde van de residus $|r_{i}|$ uitzet in functie van de berekende waarde $y_{i}$ (Figuur~\ref{fig:scale_location}). Men neemt de vierkantswortel van de absolute waarden van de residus omdat de scheefheid daarvan kleiner is dan de scheefheid van de absolute waarde op zich. Die waarden zouden op een horizontale lijn moeten liggen (niet de nullijn).
+Het nadeel van Figuur~\ref{fig:studentized_resid} is dat je zowel oog moet hebben voor positieve als negatieve residus. Je kan je een trechtergrafiek voorstellen waarbij zowel de positieve als de negatieve residus stijgen i.f.v. $\hat{y}_{i}$ zodat de variantie stijgt, terwijl de gemiddelde waarde toch nul blijft (de blauwe lijn). Daarom gebruikt men soms het kwadraat van de (studentized) residus, of de absolute waarde. In een ''Scale-Location''-plot gebruikt men de wortel van de absolute waarde van de residus $|r_{i}|$ die uitgezet wordt in functie van de berekende waarde $y_{i}$ (Figuur~\ref{fig:scale_location})\sidenote{Men neemt de vierkantswortel van de absolute waarden van de residus omdat de scheefheid daarvan kleiner is dan de scheefheid van de absolute waarde op zich}. Die waarden zouden willekeurig rondom een horizontale lijn moeten liggen (niet de nullijn). Indien dat niet het geval is dan zien we in de grafiek op welke \emph{plaats} (location) de residus, en daarom wellicht ook de variantie, groter is (scale).
 
 <<label=scale_location,fig=TRUE,include=FALSE, echo=FALSE>>=
 #  lm_abs_stud_res <- lm(abs(student_res) ~ yhat, data=geg)
@@ -810,7 +841,7 @@ p3
 \end{marginfigure}
 
 \subsection{Veronderstelling 4: $cov(U_{i},U_{j})=0$ voor $i \neq j$}
-Tricky! Als er onderlinge afhankelijkheid is, dan is het meestal via een derde element, bij voorbeeld \'e\'en van de onafhankelijke variabelen. In dit geval is er maar \'e\'en onafhankelijke variabele en vallen we terug op Figuur~\ref{fig:controle_veronderstelling3}. Daar kunnen we eventueel zien of er een verband is tussen $u_{i}$ en $x_{i}$. Een anders situatie is autocorrelatie waarbij de huidige term afhankelijk is van de vorige. Dat komt veel voor bij tijdsreeksen. Daar is het dus het type van de data (tijdsreeks) dat doet twijfelen aan Veronderstelling 4. De Durbin-Watson test (in het ''car"-package) gaat na of er een lag1-autocorrelatie en, voor die situatie, kunnen we dit nagaan voor de fouttermen:
+Tricky! Als er onderlinge afhankelijkheid is, dan is het meestal via een derde element, bij voorbeeld \'e\'en van de onafhankelijke variabelen. In dit geval is er maar \'e\'en onafhankelijke variabele en vallen we terug op Figuur~\ref{fig:controle_veronderstelling3}. Daar kunnen we eventueel zien of er een verband is tussen $u_{i}$ en $x_{i}$. Een anders situatie is autocorrelatie waarbij de huidige term afhankelijk is van de vorige. Dat komt veel voor bij tijdsreeksen. Daar is het dus het type van de data (tijdsreeks) dat doet twijfelen aan Veronderstelling 4. De Durbin-Watson test (in het ''car"-package) gaat na of er een lag1-autocorrelatie is en, voor die situatie, kunnen we dit nagaan voor de fouttermen:
 
 <<>>=
 durbinWatsonTest(lineair_model)
@@ -822,25 +853,32 @@ In dit voorbeeld kunnen we autocorrelatie lag1 uitsluiten.
 Dit kunnen we eenvoudig zien met ''qqnorm" en ''qqline" in R. Opgeschoond met ggplot geeft dit Figuur~\ref{fig:controle_veronderstelling5}. We zien dat de gemiddelde waarde van de residus (Veronderstelling 1) inderdaad nul is. De normaliteit wordt bevestigd door de ligging t.o.v. de ideale lijn.
 
 <<label=controle_veronderstelling5,fig=TRUE,include=FALSE, echo=FALSE>>=
-kwantiel <- data.frame(q1=qqnorm(linmod$.std.resid, plot.it = FALSE)[[1]], q2=qqnorm(linmod$.std.resid, plot.it = FALSE)[[2]])
+kwantiel <- data.frame(q1=qqnorm(linmod$.std.resid, plot.it = FALSE)[[1]], 
+                       q2=qqnorm(linmod$.std.resid, plot.it = FALSE)[[2]])
 xmin <- min(kwantiel$q1) - 0.2*(abs(min(kwantiel$q1)))
-xmax <- max(kwantiel$q1) + 0.2*(abs(max(kwantiel$q1)))
+xmax <- max(kwantiel$q1) + 0.1*(abs(max(kwantiel$q1)))
 ymin <- min(kwantiel$q2) - 0.2*(abs(min(kwantiel$q2)))
-ymax <- max(kwantiel$q2) + 0.2*(abs(max(kwantiel$q2)))
+ymax <- max(kwantiel$q2) + 0.1*(abs(max(kwantiel$q2)))
+x1 <- as.numeric(quantile(kwantiel$q1)[2])
+x2 <- as.numeric(quantile(kwantiel$q1)[4])
+y1 <- as.numeric(quantile(kwantiel$q2)[2])
+y2 <- as.numeric(quantile(kwantiel$q2)[4])
+slope <- (y2-y1)/(x2-x1)
+interc <- y1 - x1*slope
 p2 <- ggplot(kwantiel, aes(q1, q2)) +
   geom_point(na.rm = TRUE, size=1) +
-  geom_text(label=rownames(kwantiel), nudge_x = 0.1*(abs(max(kwantiel$q2))), nudge_y = 0, size=2.5) +
-  geom_line(aes(x=q2, y=q2), col="blue", linetype="dashed") +
+  geom_text(label=rownames(kwantiel), nudge_x = (xmax-xmin)/40, nudge_y = 0, size=2.5) +
+  geom_abline(slope=slope, intercept=interc, color="blue") +
   xlim(min(xmin,ymin), max(xmax,ymax)) +
   ylim(min(xmin,ymin), max(xmax,ymax)) +
-  xlab("Theor. Studentized Quantielen") +
-  ylab("Waarg. Studentized Quantielen") +
+  xlab("Theor. Studentized Quantiles") +
+  ylab("Exp. Studentized Quantiles") +
   ggtitle("Normplot studentized residus") +
   JT.theme
 p2
 @
 
-\begin{marginfigure}
+\begin{marginfigure}[2cm]
 \includegraphics[width=1\textwidth]{LinReg-controle_veronderstelling5}
 \caption{ }
 \label{fig:controle_veronderstelling5}
@@ -856,7 +894,7 @@ ks.test(linmod$.std.resid, pnorm)
 @
 
 \subsection{Invloedrijke meetwaarden}
-\newthought{De invloed} van de meetwaarden die ver gelegen zijn t.o.v. het gemiddelde $\bar{x}$ is groter dan de invloed van punten die naar het midden toe gelegen zijn. Dat hebben we gezien als \emph{leverage}, en een maat hiervoor zijn de waarden op de diagonaal van de ''hat-matrix" $H$. We spreken van een grote leverage wanneer de h-waarde meer dan twee keer het gemiddelde $\bar{h}=\frac{m}{n}$ waarbij $m$ het aantal modelparameters is (hier 2) en $n$ het aantal meetpunten (hier 5). Een voorwaarde is wel dat het aantal meetpunten $n$ voldoende groot moet zijn, wat in dit voorbeeld niet het geval is.
+\newthought{De invloed} van meetwaarden die ver gelegen zijn t.o.v. het gemiddelde $\bar{x}$ is groter dan de invloed van punten die naar het midden toe gelegen zijn. Dat hebben we gezien als \emph{leverage}, en een maat hiervoor zijn de waarden op de diagonaal van de ''hat-matrix" $H$. We spreken van een grote leverage wanneer de h-waarde meer dan twee keer het gemiddelde $\bar{h}=\frac{m}{n}$ waarbij $m$ het aantal modelparameters is (hier 2) en $n$ het aantal meetpunten (hier 5). Een voorwaarde is wel dat het aantal meetpunten $n$ voldoende groot moet zijn, wat in dit voorbeeld niet het geval is.
 
 Wanneer we vaststellen dat \'e\'en of meerdere meetpunten een leverage hebben die ''groot" is, dan moeten we nog nagaan of dat hefboomeffect een invloed heeft op het model. Wanneer een meetpunt ver van het gemiddelde gelegen is, maar vrijwel op de regressielijn die bepaald wordt door de andere punten, dan is de invloed van dat meetpunt gering en hoeven we ons geen zorgen te maken dat dit meetpunt het model sterk be\"invloedt. Een maat hiervoor is \emph{Cook's Distance}. De Cook's Distance van meetpunt i wordt gegeven door:
 \begin{equation}
@@ -865,7 +903,7 @@ D_{i}=\frac{\sum\limits_{j=1}^{j=n}\left( \hat{y}_{j} - \hat{y}_{j(i)} \right)}{
 
 Hierin is $\hat{y}_{j}$ de berekende waarde bij $x_{j}$ als alle $n$ meetpunten in rekening worden gebracht, terwijl $\hat{y}_{j(i)}$ de berekende waarde is bij $x_{j}$ als we meetpunt $i$ \emph{niet} in de berekening opnemen. Dat doen we voor alle meetpunten en we nemen de som. Om dit te standaardiseren delen we door het aantal modelparameters $m$ vermenigvuldigd met MSE. Deze statistiek is F(n,n-m) verdeeld. Als de kans dat we deze waarde of hoger vinden groter is dan 50\% dan heeft de betrokken waarneming een grote invloed op het model.
 
-De berekening van Cook's Distance lijkt ingewikkeld omdat men telkens een bijkomend lineair model moet opstellen waarbij de i-de waarneming wordt uitgesloten. Gelukkig kan men dit herleiden tot een eenvoudigere berekening waarbij we enkel de diagonaalelementen van de hat-matrix $H$ nodig hebben:
+De berekening van Cook's Distance lijkt ingewikkeld omdat men telkens een bijkomend lineair model moet opstellen waarbij de i-de waarneming wordt uitgesloten. Gelukkig kan men dit herleiden tot een eenvoudigere berekening waarbij we enkel de residus $r_{i}$ en de diagonaalelementen $h_{ii}$ van de hat-matrix $H$ nodig hebben:
 \begin{equation}
 D_{i}=\frac{r_{i}^{2}}{mMSE}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)^{2}} \right]
 \end{equation}
@@ -884,7 +922,8 @@ linmod$.cooksd
 
 <<label=Cooks_Distance,fig=TRUE,include=FALSE, echo=FALSE>>=
 p4 <- ggplot(linmod, aes(seq_along(.cooksd))) +
-  geom_linerange(aes(ymin = rep(0,n), ymax = .cooksd), size=2) +
+  geom_linerange(aes(ymin = rep(0,n), ymax = .cooksd), size=1.5) +
+  geom_hline(yintercept=(4/(n-m)), col="red") +
   xlab("Meetpunt") +
   ylab("Cook's distance") +
   ggtitle("Invloedrijke meetpunten", subtitle="Cook's distance") +
@@ -898,8 +937,8 @@ p4
 \label{fig:Cooks_Distance}
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{marginfigure}
-
-De kans dat we deze Cook's Distances vinden wordt berekend met de $F_{m,(n-m)}$-kansverdeling:
+\medskip
+De kans dat we deze Cook's Distances (of groter) vinden wordt berekend met de $F_{m,(n-m)}$-kansverdeling:
 \begin{equation}
 P[D_{i} of groter]=1-F_{F}(D_{i})=1-pf(D_{i},m,n-m)
 \end{equation}
@@ -909,23 +948,30 @@ geg$kansDi <- 1-pf(geg$Di,m,n-m)
 geg$kansDi
 @
 
-Hier zijn alle punten invloedrijk, maar dat komt omdat het aantal punten $n$ zeer klein is (5).
+Andere criteria voor ''invloedrijkheid" zijn:
+\begin{itemize}
+  \item $D_{i} > 1$
+  \item $D_{i} > \frac{4}{(n-m)}$
+\end{itemize}
 
+In Figuur~\ref{fig:Cooks_Distance} is het laatste criterium opgenomen als rode grenslijn.
+\medskip
 De formule voor Cook's Distance
 \begin{equation}
 D_{i}=\frac{r_{i}^{2}}{mMSE}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)^{2}} \right]
 \end{equation}
 
-geeft duidelijk aan wanneer een meetpunt invloedrijk is, en dus de moeite om grondig te bekijken (niet om het te verwijderen!). De invloed van meetpunt $i$ is groot wanneer het residu $r_{i}$ groot is en/of de leverage $h_{ii}$ groot is. Een punt dat ver gelegen is van het zwaartepunt $(\bar{x},\bar{y})$ heeft een grote hefboom t.o.v. het draaipunt $(\bar{x},\bar{y})$ en kan daardoor de regressierechte meer verdraaien door haar invloed op $b_{0}$ en $b_{1}$. Maar indien dat meetpunt gelegen is op of in de buurt van de regressielijn (klein residu $r_{i}$) dan zal de invloed (Cook's Distance) toch klein zijn. Analoog zal een meetpunt dat dicht bij het zwaartepunt ligt toch een grote invloed kunnen hebben op de ligging van de regressielijn wanneer het ver van die lijn (die in grote mate door de (n-1) andere meetpunten wordt bepaald) en dus een groot residu $r_{i}$ heeft. Het is dus zinvol om die twee effecten (residu en leverage) uit elkaar te halen. Dat kan door het residu (studentized) uit te zetten i.f.v. de leverage (Figuur~\ref{fig:Cooks_explained} links) of de Cook's Distance i.f.v. de breuk $\frac{h_{ii}}{(1-h_{ii})}$ (Figuur~\ref{fig:Cooks_explained} rechts).
+geeft duidelijk aan wanneer een meetpunt invloedrijk is, en dus de moeite om grondig te bekijken (niet om het te verwijderen!). De invloed van meetpunt $i$ is groot wanneer het residu $r_{i}$ groot is en/of de leverage $h_{ii}$ groot is. Een punt dat ver gelegen is van het zwaartepunt $(\bar{x},\bar{y})$ heeft een grote hefboom t.o.v. het draaipunt $(\bar{x},\bar{y})$ en kan daardoor de regressierechte meer verdraaien door haar invloed op $b_{0}$ en $b_{1}$. Maar indien dat meetpunt gelegen is op of in de buurt van de regressielijn (klein residu $r_{i}$) dan zal de invloed (Cook's Distance) toch klein zijn. Analoog zal een meetpunt dat dicht bij het zwaartepunt ligt toch een grote invloed kunnen hebben op de ligging van de regressielijn wanneer het ver van die lijn (die in grote mate door de (n-1) andere meetpunten wordt bepaald) en dus een groot residu $r_{i}$ heeft. Het is dus zinvol om die twee effecten (residu en leverage) uit elkaar te halen. Dat kan door het residu (studentized) uit te zetten i.f.v. de leverage (Figuur~\ref{fig:Cooks_explained} links) of de Cook's Distance i.f.v. de breuk $h_{ii}$ (Figuur~\ref{fig:Cooks_explained} rechts).
 
 <<label=Cooks_explained,fig=TRUE,include=FALSE, echo=FALSE>>=
 xmin <- min(linmod$.hat) - 0.2*(abs(min(linmod$.hat)))
-xmax <- max(linmod$.hat) + 0.2*(abs(max(linmod$.hat)))
+xmax <- max(2*m/n,max(linmod$.hat)) + 0.1*(abs(max(linmod$.hat)))
 ymin <- min(c(-3,min(linmod$.std.resid) - 0.2*(abs(min(linmod$.std.resid)))))
-ymax <- max(c(3,max(linmod$.std.resid) + 0.2*(abs(max(linmod$.std.resid)))))
+ymax <- max(c(3,max(linmod$.std.resid) + 0.1*(abs(max(linmod$.std.resid)))))
 p5 <- ggplot(linmod, aes(.hat, .std.resid)) +
   geom_point(aes(size=.cooksd), na.rm=TRUE) +
   geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat))), nudge_y = 0, size=2.5) +
+  geom_vline(xintercept=2*m/n, col="red") +
   xlim(xmin,xmax) +
   ylim(ymin,ymax) +
   xlab("Leverage hii") +
@@ -935,18 +981,17 @@ p5 <- ggplot(linmod, aes(.hat, .std.resid)) +
   JT.theme +
   theme(legend.position="right", legend.title=element_text(size=7) ,legend.text=element_text(size=5))
 
-xmin <- min(linmod$.hat/(1-linmod$.hat)) - 0.2*(abs(min(linmod$.hat/(1-linmod$.hat))))
-xmax <- max(linmod$.hat/(1-linmod$.hat)) + 0.2*(abs(max(linmod$.hat/(1-linmod$.hat))))
 ymin <- min(linmod$.cooksd) - 0.2*(abs(min(linmod$.cooksd)))
-ymax <- max(linmod$.cooksd) + 0.2*(abs(max(linmod$.cooksd)))   
-p6 <- ggplot(linmod, aes(.hat/(1-.hat), .cooksd)) +
+ymax <- max(linmod$.cooksd) + 0.1*(abs(max(linmod$.cooksd)))   
+p6 <- ggplot(linmod, aes(.hat, .cooksd)) +
   geom_point(na.rm=TRUE) +
-  geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat/(1-linmod$.hat)))), nudge_y = 0.01, size=2.5) +
+  geom_vline(xintercept=2*m/n, col="red") +
+  geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat))), nudge_y = 0.01, size=2.5) +
   xlim(0,xmax) +
   ylim(ymin,ymax) +
-  xlab("hii/(1-hii)") +
+  xlab("Leverage hii") +
   ylab("Cook's Distance") +
-  ggtitle("Invloedrijke meetpunten", subtitle="Cook's distance vs hii/(1-hii)") +
+  ggtitle("Invloedrijke meetpunten", subtitle="Cook's distance vs hii") +
   geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed") +
   JT.theme
 
@@ -961,7 +1006,7 @@ grid.arrange(p5, p6,ncol=2)
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{figure}
 
-Aan de linkerkant zien we dat Cook's Distance (grootte van het meetpunt) groter wordt naarmate de leverage $h_{ii}$ en het residu $r_{i}$ groter worden. Aan de rechterkant zien we de lineaire relatie tussen Cook's Distance en de breuk $\frac{h_{ii}}{(1-h_{ii})}$. De richtingsco\"effici\"ent van de rechte wordt bepaald door het kwadraat van het residu $r_{i}$. De stippellijnen geven rechten met richtingsco\"effici\"enten gaande van 0 tot 3 in stappen van 0.5. Beide figuren zeggen hetzelfde: meetpunten 1 en 5 (de uitersten) zijn de meest invloedrijke.
+Aan de linkerkant zien we dat Cook's Distance (oppervlakte van het punt) groter wordt naarmate de leverage $h_{ii}$ en het residu $r_{i}$ groter worden. Aan de rechterkant zien we de lineaire relatie tussen Cook's Distance en $h_{ii}$. De richtingsco\"effici\"ent van de rechte wordt (mede) bepaald door het kwadraat van het residu $r_{i}$. De stippellijnen geven rechten met richtingsco\"effici\"enten gaande van 0 tot 3 in stappen van 0.5. Beide figuren zeggen hetzelfde: meetpunten 1 en 5 (de uitersten) zijn de meest invloedrijke. In beide figuren is de grens $h_{ii}=2\frac{m}{n}$ aangegeven die wijst op grote leverage.
 
 
 \subsection{Samenvatting van alle diagnostische plots (Figuur~\ref{fig:diagnostic_plots})}
