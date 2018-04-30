@@ -767,6 +767,7 @@ stdres_{i}=\frac{r_{i}}{\sqrt{\sigma^{2}\left(1-h_{i,i} \right)}}
 $\sigma^{2}$ is niet bekend maar wordt geschat door $MSE=\frac{SSE}{(n-2)}$ zodat
 \begin{equation}
 stdres_{i}=\frac{r_{i}}{\sqrt{MSE\left(1-h_{i,i} \right)}}
+\label{eq:stud.resid}
 \end{equation}
 
 In dit voorbeeld zijn de studentized residus dus:
@@ -787,9 +788,9 @@ De relevante grafiek wordt dus het verband tussen de studentized residus i.f.v. 
 
 <<label=studentized_resid,fig=TRUE,include=FALSE, echo=FALSE>>=
 xmin <- min(linmod$.fitted) - 0.2*(abs(min(linmod$.fitted)))
-xmax <- max(linmod$.fitted) + 0.2*(abs(max(linmod$.fitted)))
+xmax <- max(linmod$.fitted) + 0.1*(abs(max(linmod$.fitted)))
 ymin <- min(c(-3,min(linmod$.std.resid) - 0.2*(abs(min(linmod$.std.resid)))))
-ymax <- max(c(3,max(linmod$.std.resid) + 0.2*(abs(max(linmod$.std.resid)))))
+ymax <- max(c(3,max(linmod$.std.resid) + 0.1*(abs(max(linmod$.std.resid)))))
 p1 <- ggplot(data=linmod, aes(x = .fitted, y = .std.resid)) +
   geom_point() +
   geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.fitted))), nudge_y = 0, size=2.5) +
@@ -908,6 +909,11 @@ De berekening van Cook's Distance lijkt ingewikkeld omdat men telkens een bijkom
 D_{i}=\frac{r_{i}^{2}}{mMSE}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)^{2}} \right]
 \end{equation}
 
+Met vergelijking (\ref{eq:stud.resid}) kunnen we Cook's Distance schrijven i.f.v. de studentized residus:
+\begin{equation}
+D_{i}=\frac{1}{m}studres_{i}^{2}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)} \right]
+\end{equation}
+
 <<>>=
 m <- 2
 MSE=sse/(n-2)
@@ -955,38 +961,39 @@ Andere criteria voor ''invloedrijkheid" zijn:
 \end{itemize}
 
 In Figuur~\ref{fig:Cooks_Distance} is het laatste criterium opgenomen als rode grenslijn.
+
 \medskip
 De formule voor Cook's Distance
 \begin{equation}
-D_{i}=\frac{r_{i}^{2}}{mMSE}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)^{2}} \right]
+D_{i}=\frac{1}{m}studres_{i}^{2}\left[ \frac{h_{ii}}{\left( 1 - h_{ii} \right)} \right]
 \end{equation}
 
-geeft duidelijk aan wanneer een meetpunt invloedrijk is, en dus de moeite om grondig te bekijken (niet om het te verwijderen!). De invloed van meetpunt $i$ is groot wanneer het residu $r_{i}$ groot is en/of de leverage $h_{ii}$ groot is. Een punt dat ver gelegen is van het zwaartepunt $(\bar{x},\bar{y})$ heeft een grote hefboom t.o.v. het draaipunt $(\bar{x},\bar{y})$ en kan daardoor de regressierechte meer verdraaien door haar invloed op $b_{0}$ en $b_{1}$. Maar indien dat meetpunt gelegen is op of in de buurt van de regressielijn (klein residu $r_{i}$) dan zal de invloed (Cook's Distance) toch klein zijn. Analoog zal een meetpunt dat dicht bij het zwaartepunt ligt toch een grote invloed kunnen hebben op de ligging van de regressielijn wanneer het ver van die lijn (die in grote mate door de (n-1) andere meetpunten wordt bepaald) en dus een groot residu $r_{i}$ heeft. Het is dus zinvol om die twee effecten (residu en leverage) uit elkaar te halen. Dat kan door het residu (studentized) uit te zetten i.f.v. de leverage (Figuur~\ref{fig:Cooks_explained} links) of de Cook's Distance i.f.v. de breuk $h_{ii}$ (Figuur~\ref{fig:Cooks_explained} rechts).
+geeft duidelijk aan wanneer een meetpunt invloedrijk is, en dus de moeite om grondig te bekijken (niet om het te verwijderen!). De invloed van meetpunt $i$ is groot wanneer het studentized residu $studres_{i}$ groot is en/of de leverage $h_{ii}$ groot is. Een punt dat ver gelegen is van het zwaartepunt $(\bar{x},\bar{y})$ heeft een grote hefboom t.o.v. het draaipunt $(\bar{x},\bar{y})$ en kan daardoor de regressierechte meer verdraaien door haar invloed op $b_{0}$ en $b_{1}$. Maar indien dat meetpunt gelegen is op of in de buurt van de regressielijn (klein residu $r_{i}$) dan zal de invloed (Cook's Distance) toch klein zijn. Analoog zal een meetpunt dat dicht bij het zwaartepunt ligt toch een grote invloed kunnen hebben op de ligging van de regressielijn wanneer het ver van die lijn (die in grote mate door de (n-1) andere meetpunten wordt bepaald) en dus een groot residu $r_{i}$ heeft. Het is dus zinvol om die twee effecten (residu en leverage) uit elkaar te halen. Dat kan door het residu (studentized) uit te zetten i.f.v. de leverage (Figuur~\ref{fig:Cooks_explained} links), of  Cook's Distance i.f.v. $h_{ii}$ (Figuur~\ref{fig:Cooks_explained} midden), of Cook's Distance i.f.v. de breuk $\frac{h_{ii}}{(1-h_{ii})}$ (Figuur~\ref{fig:Cooks_explained} rechts).
 
 <<label=Cooks_explained,fig=TRUE,include=FALSE, echo=FALSE>>=
 xmin <- min(linmod$.hat) - 0.2*(abs(min(linmod$.hat)))
 xmax <- max(2*m/n,max(linmod$.hat)) + 0.1*(abs(max(linmod$.hat)))
 ymin <- min(c(-3,min(linmod$.std.resid) - 0.2*(abs(min(linmod$.std.resid)))))
 ymax <- max(c(3,max(linmod$.std.resid) + 0.1*(abs(max(linmod$.std.resid)))))
-p5 <- ggplot(linmod, aes(.hat, .std.resid)) +
-  geom_point(aes(size=.cooksd), na.rm=TRUE) +
-  geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat))), nudge_y = 0, size=2.5) +
+p5 <- ggplot(linmod, aes(.hat, .std.resid, fill=.cooksd)) +
+  geom_point(shape=21, size=2.5) +
+  scale_fill_gradient(low="green", high="red", guide=FALSE) +
+  geom_text(label=rownames(linmod), nudge_x = (xmax-xmin)/10, nudge_y = 0, size=2.5) +
   geom_vline(xintercept=2*m/n, col="red") +
   xlim(xmin,xmax) +
   ylim(ymin,ymax) +
   xlab("Leverage hii") +
   ylab("Studentized Residus") +
   ggtitle("Invloedrijke meetpunten", subtitle="Residu ri i.f.v. leverage hii") +
-  scale_size_continuous("Cook's Distance", range=c(1,5)) +
-  JT.theme +
-  theme(legend.position="right", legend.title=element_text(size=7) ,legend.text=element_text(size=5))
+  JT.theme
 
 ymin <- min(linmod$.cooksd) - 0.2*(abs(min(linmod$.cooksd)))
 ymax <- max(linmod$.cooksd) + 0.1*(abs(max(linmod$.cooksd)))   
-p6 <- ggplot(linmod, aes(.hat, .cooksd)) +
-  geom_point(na.rm=TRUE) +
+p6 <- ggplot(linmod, aes(.hat, .cooksd, fill=.cooksd)) +
+  geom_point(shape=21, size=2.5) +
+  scale_fill_gradient(low="green", high="red", guide=FALSE) +
   geom_vline(xintercept=2*m/n, col="red") +
-  geom_text(label=rownames(linmod), nudge_x = 0.2*(abs(min(linmod$.hat))), nudge_y = 0.01, size=2.5) +
+  geom_text(label=rownames(linmod), nudge_x = (xmax-xmin)/10, nudge_y = 0, size=2.5) +
   xlim(0,xmax) +
   ylim(ymin,ymax) +
   xlab("Leverage hii") +
@@ -995,7 +1002,21 @@ p6 <- ggplot(linmod, aes(.hat, .cooksd)) +
   geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed") +
   JT.theme
 
-grid.arrange(p5, p6,ncol=2)
+xmin <- min(linmod$.hat/(1-linmod$.hat)) - 0.2*(abs(min(linmod$.hat/(1-linmod$.hat))))
+xmax <- max(2*m/(n-2*m),max(linmod$.hat/(1-linmod$.hat))) + 0.1*(abs(max(linmod$.hat/(1-linmod$.hat))))
+p7 <- ggplot(linmod, aes(.hat/(1-.hat), .cooksd, fill=.cooksd)) +
+  geom_point(shape=21, size=2.5) +
+  scale_fill_gradient(low="green", high="red", guide=FALSE) +
+  geom_vline(xintercept=2*m/(n-2*m), col="red") +
+  geom_text(label=rownames(linmod), nudge_x = (xmax-xmin)/10, nudge_y = 0, size=2.5) +
+  xlim(0,xmax) +
+  ylim(ymin,ymax) +
+  xlab("hii/(1-hii)") +
+  ylab("Cook's Distance") +
+  ggtitle("Invloedrijke meetpunten", subtitle="Cook's distance vs hii/(1-hii)") +
+  geom_abline(slope=seq(0,3,0.5), color="gray", linetype="dashed") +
+  JT.theme
+grid.arrange(p5, p6, p7, ncol=3)
 @
 
 \begin{figure}
@@ -1006,7 +1027,7 @@ grid.arrange(p5, p6,ncol=2)
 \setfloatalignment{b}% forces caption to be bottom-aligned
 \end{figure}
 
-Aan de linkerkant zien we dat Cook's Distance (oppervlakte van het punt) groter wordt naarmate de leverage $h_{ii}$ en het residu $r_{i}$ groter worden. Aan de rechterkant zien we de lineaire relatie tussen Cook's Distance en $h_{ii}$. De richtingsco\"effici\"ent van de rechte wordt (mede) bepaald door het kwadraat van het residu $r_{i}$. De stippellijnen geven rechten met richtingsco\"effici\"enten gaande van 0 tot 3 in stappen van 0.5. Beide figuren zeggen hetzelfde: meetpunten 1 en 5 (de uitersten) zijn de meest invloedrijke. In beide figuren is de grens $h_{ii}=2\frac{m}{n}$ aangegeven die wijst op grote leverage.
+Aan de linkerkant zien we dat Cook's Distance (oppervlakte van het punt) groter wordt naarmate de leverage $h_{ii}$ en het residu $r_{i}$ groter worden. Aan de rechterkant zien we de lineaire relatie tussen Cook's Distance en $\frac{h_{ii}}{1-h_{ii}}$. De richtingsco\"effici\"ent van de rechte wordt  bepaald door het kwadraat van het studentized residu $studres_{i}$. De stippellijnen geven rechten met richtingsco\"effici\"enten gaande van 0 tot 3 in stappen van 0.5. Beide figuren zeggen hetzelfde: meetpunten 1 en 5 (de uitersten) zijn de meest invloedrijke. In de linker- en middenfiguur is de grens $h_{ii}=2\frac{m}{n}$ aangegeven die wijst op grote leverage. In de rechterfiguur is die grens $\frac{2m}{n-2m}$.
 
 
 \subsection{Samenvatting van alle diagnostische plots (Figuur~\ref{fig:diagnostic_plots})}
