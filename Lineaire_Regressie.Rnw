@@ -1066,4 +1066,12 @@ plot(lineair_model, which=6, ask=FALSE)
 par(mfrow = c(1, 1)) # reset
 @
 
+\newpage
+\textbf{Thanks} \\
+\medskip
+R Core Team (2018). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+\medskip
+<<>>=
+sessionInfo()
+@
 \end{document}
