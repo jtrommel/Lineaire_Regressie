@@ -721,7 +721,7 @@ zodat
 \boldsymbol{r}=\boldsymbol{Y}-\boldsymbol{X}\boldsymbol{b}=\boldsymbol{Y}-\boldsymbol{X}\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'}\boldsymbol{Y}=\left[ \boldsymbol{I} - \boldsymbol{X}\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'} \right]\boldsymbol{Y}
 \end{equation}
 We stellen
-\begin{equation}
+\begin{equation} \label{eq:hatmatrix}
 \boldsymbol{H}=\boldsymbol{X}\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'}
 \end{equation}
 
@@ -1064,6 +1064,69 @@ plot(lineair_model, which=6, ask=FALSE)
 
 <<>>=
 par(mfrow = c(1, 1)) # reset
+@
+
+\newpage
+
+\section{Eigen lineaire regressie functie}
+
+De hele berekening is gecentreerd op de ''hat-matrix'' van vergelijking \ref{eq:hatmatrix}
+\begin{equation}
+\boldsymbol{H}=\boldsymbol{X}\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'}
+\end{equation}
+
+waarmee we de parameters $\beta$ kunnen berekenen:
+\begin{equation}
+  \boldsymbol{b}=\left( \boldsymbol{X'}\boldsymbol{X} \right)^{-1}\boldsymbol{X'}\boldsymbol{Y}
+\end{equation}
+
+We gieten dit in een eigen functie, wat een aangepaste versie is van wat verscheen in R-bloggers\sidenote{Create your Machine Learning Library from scratch with R! (1/5) - Linear and Logistic Regression (30.01.2018)}
+
+<<>>=
+JTR_fit_lm <- function(x, y, intercept=TRUE, lambda=0) {
+  # checking it the input of independent variables is in the form of a matrix. If not, convert to matrix
+  if (!is.matrix(x)) {
+    x <- as.matrix(x)
+  }
+  # checking it the input of response variable is in the form of a matrix. If not, convert to matrix
+  if (!is.matrix(y)) {
+    y <- as.matrix(y)
+  }
+  # if an intercept, different from 0, is wanted (the default) we add a column with 1's to the x matrix
+  if (intercept) {
+    x <- cbind(1,x) # changed cbind(x,1) to cbind(1,x) to get b0 as the first coëfficiënt, and b1 as the second.
+  }
+  my_lm <- list(intercept=intercept)
+  my_lm[['coeffs']] <- solve(t(x) %*% x) %*% t(x) %*% y # calculates the coefficients
+  my_lm[['yhat']] <- x %*% my_lm[['coeffs']] # calculates the yhat values. Changed from 'preds' to 'yhat'
+  my_lm[['residuals']] <- my_lm[['yhat']] - y # calculates the residuals
+  my_lm[['mse']] <- sum(my_lm[['residuals']]^2)/(dim(x)[1]-2) # changed from mean(my_lim[['residuals]]^2)
+  attr(my_lm, "class") <- "my_lm"
+  return(my_lm)
+}
+@
+
+<<>>=
+JTR_pred_lm <- function(my_lm, x , ..) {
+  if (!is.matrix(x)) {
+    x <- as.matrix(x)
+  }
+  if (my_lm[['intercept']]) {
+    x <- cbind(1,x) # changed from cbind(x,1)
+  }
+  pred_lm <- cbind(x,x %*% my_lm[['coeffs']])[,2:3] # changed from x %*% my_lm[['coeffs]] to get a result with x- and y- values
+  return(pred_lm) # added
+}
+@
+
+<<>>=
+JTR_plot_lm <- function(my_lim, bins=30, ..) {
+  ggplot(data=as.data.frame(my_lim[['residuals']]), aes(x=V1)) + 
+    geom_histogram(bins=bins) +
+    labs(title = "Histogram van de residus", 
+       x = "residus ri", 
+       y = "aantal")
+}
 @
 
 \newpage
